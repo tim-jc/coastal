@@ -1,5 +1,5 @@
 ---
-title: "phïets::coastal"
+title: "phïets::coasting"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -18,6 +18,8 @@ rm(list=ls(all = TRUE))
 source("coastal_vis_functions.R")
 
 load_gps_data(file_location = "gps_data/csv_files/")
+
+rides_index <- create_summary()
 ```
 
 Column {data-width=650}
@@ -27,7 +29,11 @@ Column {data-width=650}
 
 ```{r}
 leaflet() %>% 
-  addTiles() %>% 
+  addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+    attribution = paste(
+      '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+    )) %>% 
   add_track(full_dataset)
 ```
 
@@ -44,13 +50,13 @@ plotly::ggplotly(gg)
 ### Miles ridden
 
 ```{r}
-valueBox("8", icon = "fa-bicycle")
+valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle")
 ```
 
 ### Metres climbed
 
 ```{r}
-valueBox("8", icon = "fa-caret-up")
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-caret-up")
 ```
 
 ### Ferries taken
