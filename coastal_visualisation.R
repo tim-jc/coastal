@@ -3,7 +3,6 @@ library(extrafont)
 library(tidyverse)
 library(leaflet)
 library(mapdata)
-library(magrittr)
 library(cowplot)
 library(lubridate)
 
@@ -31,52 +30,13 @@ rides_index <- create_summary()
 
 uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
 
-rev_geo <- read_csv("reverse_geocoding.csv")
-
-towns <- read_csv("uk_towns_by_population.csv")
-
-postcode_elevation <- read_csv("open_postcode_elevation.csv")
-
 # Processing --------------------------------------------------------------
-
-# Order rides
-ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
-                  "folkestone_bognor", "london_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
-                  "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
-                  "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
-
-# Add reverse geocoding and elevation data
-full_dataset <- full_dataset %>%
-  left_join(rev_geo, by = c("lon", "lat")) %>% 
-  mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
-         town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
-         ride = factor(ride, levels = ride_levels, ordered = T)) %>% 
-  left_join(postcode_elevation, by = "postcode") %>% 
-  left_join(towns, by = "town") %>% 
-  arrange(ride) %>% 
-  mutate(id = seq(1,nrow(.),1))
 
 # Write out list of lat / longs that need reverse geocoding
 full_dataset %>% 
   filter(is.na(postcode)) %>% 
   select(lon, lat) %>% 
   write_csv("locations_to_map.csv")
-  
-# 10 most populous towns on the route
-top_10_towns <- full_dataset %>% 
-  select(town, Population, town_lat, town_lon) %>% 
-  unique() %>% 
-  arrange(desc(Population)) %>% 
-  head(10) %>% 
-  arrange(desc(town_lat)) %>% 
-  mutate(top_10_town = TRUE) %>% 
-  select(town, top_10_town)
-
-# Add back to main dataset and flag start / finish towns
-full_dataset <- full_dataset %>%
-  left_join(top_10_towns, by = "town") %>% 
-  mutate(is_bookend = if_else(id == 1 | id == nrow(.), T, F),
-         elevation_plot_lbl = if_else(is_bookend, town, NA_character_))
 
 # View route in leaflet ---------------------------------------------------
 
@@ -97,19 +57,6 @@ map_track <- ggplot() +
         panel.grid = element_blank(),
         panel.background = element_rect(fill = "#273c75"),
         plot.background = element_rect(fill = "#273c75", colour = NA))
-
-elevation_profile <- full_dataset %>% 
-  ggplot(aes(x = id, y = -ele)) +
-  ggformula::geom_spline(colour = "#FFFFFF", spar = c(.2)) +
-  geom_text(aes(label = elevation_plot_lbl), angle = 0, y = -100, colour = "#FFFFFF", family = "Avenir", fontface = "italic", size = 5) +
-  coord_flip() +
-  theme(axis.title = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.grid = element_blank(),
-        panel.background = element_rect(fill = "transparent"),
-        plot.background = element_rect(fill = "transparent", colour = NA))
-elevation_profile
 
 summary_data <- rides_index %>% 
   mutate(yr = as.character(yr)) %>% 
