@@ -1,4 +1,10 @@
-# coastal vis functions
+# coastal vis functions / values
+
+# Order rides
+ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
+                  "folkestone_bognor", "london_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
+                  "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
+                  "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
 
 gpx_to_df <- function(file_path) {
   
@@ -8,7 +14,7 @@ gpx_to_df <- function(file_path) {
   df <- df %>% mutate(ele = as.numeric(ele))
   
   # calculate distance in miles and climb in meters between each point
-  df %<>% 
+  df <- df %>% 
     mutate(prev_lon = lag(lon),
            prev_lat = lag(lat),
            prev_ele = lag(ele),
@@ -61,12 +67,12 @@ load_gps_data <- function(file_location = NA_character_) {
   for (j in file_names) {
 
       df_load <- readr::read_csv(j)
-      df_load %<>% select(-extensions)
+      df_load <- df_load %>% select(-extensions)
       
       # Make sure all rides are going in the same direction
       if (df_load$direction == "cw") {
         
-        df_load %<>% arrange(desc(time))
+        df_load <- df_load %>% arrange(desc(time))
         
       }
       
@@ -78,6 +84,15 @@ load_gps_data <- function(file_location = NA_character_) {
   if (!is.na(file_location)) {
     setwd(old_wd)
   }
+  
+  full_dataset <- full_dataset %>% 
+    left_join(read_csv("reverse_geocoding.csv"), by = c("lon", "lat")) %>% 
+    mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
+           town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
+           ride = factor(ride, levels = ride_levels, ordered = T)) %>% 
+    arrange(ride) %>% 
+    left_join(read_csv("open_postcode_elevation.csv"), by = "postcode") %>% 
+    mutate(id = seq(1,nrow(.),1))
   
   # write out bound dataset
   assign("full_dataset", full_dataset, envir = .GlobalEnv)
