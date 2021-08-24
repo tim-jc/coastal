@@ -2,7 +2,9 @@
 
 1 - open gpx_processor.R, crop ride to size and convert to .csv
 
-2 - open coastal_visualisation.R, add new ride to ride_levels in the correct order. This will flag any location that are missing reverse geocoding (ie. no postcode)
+2 - open coastal_vis_functions.R, add new ride to ride_levels in the correct order
+
+2 - open coastal_visualisation.R. This will flag any locations that are missing reverse geocoding (ie. no postcode)
 
 3 - open reverse_geocoder.R
 
