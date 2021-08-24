@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "phïets::coastal"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -10,30 +10,51 @@ output:
 library(flexdashboard)
 library(tidyverse)
 library(plotly)
+library(leaflet)
+
+# clear the memory
+rm(list=ls(all = TRUE))
+
+source("coastal_vis_functions.R")
+
+load_gps_data(file_location = "gps_data/csv_files/")
 ```
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Chart A
+### Map
 
 ```{r}
-gg <- iris %>% ggplot(aes(x = Species, y = Sepal.Length)) + geom_point()
-plotly::ggplotly(gg)
+leaflet() %>% 
+  addTiles() %>% 
+  add_track(full_dataset)
 ```
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Chart B
+### Contributors
 
 ```{r}
-
+gg <- iris %>% ggplot(aes(x = Species)) + geom_bar(stat = "count") + coord_flip()
+plotly::ggplotly(gg)
 ```
 
-### Chart C
+### Miles ridden
 
 ```{r}
-
+valueBox("8", icon = "fa-bicycle")
 ```
 
+### Metres climbed
+
+```{r}
+valueBox("8", icon = "fa-caret-up")
+```
+
+### Ferries taken
+
+```{r}
+valueBox("8", icon = "fa-ship")
+```
