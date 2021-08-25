@@ -6,6 +6,15 @@ ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","pe
                   "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
                   "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
 
+xp_unit <- 15
+
+xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
+                           56000,262000,70000,78000,88000,94000,100000,110000,121000,130000,140000,150000,170000,180000,190000,200000,220000,
+                           230000,250000,260000,280000,290000,310000,330000,340000,360000,380000,400000,420000,440000,460000,480000,500000)
+                    ) %>% 
+  mutate(xp_level = seq_along(xp),
+         next_xp = lead(xp))
+
 gpx_to_df <- function(file_path) {
   
   # read gpx file and convert to df
@@ -33,19 +42,21 @@ add_track <- function(leaflet_obj, gpx_df) {
   longitude <- gpx_df$lon
   
   leaflet_obj %>% 
-    addPolylines(lat = latitude, lng = longitude, opacity = 1, weight = 3, color = "red")
+    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = "navy")
 
 }
 
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(file_name, ride, direction) %>% 
+    group_by(file_name, ride, riders, direction) %>% 
     summarise(start_datetime = min(time),
               finish_datetime = max(time),
               distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
               elevation_metres = sum(climb_since_prev, na.rm = T),
-              yr = lubridate::year(start_datetime))
+              dist_per_elev = distance_miles / elevation_metres,
+              yr = lubridate::year(start_datetime)) %>% 
+    ungroup()
   
   return(df)
   
@@ -98,3 +109,47 @@ load_gps_data <- function(file_location = NA_character_) {
   assign("full_dataset", full_dataset, envir = .GlobalEnv)
   
 }
+
+draw_xp_plot <- function() {
+  
+  mile_equivalent_climb <- min(rides_index$dist_per_elev)
+  
+  rider_xp <- rides_index %>% 
+    select(riders, distance_miles, elevation_metres) %>% 
+    mutate(rider = str_split(riders, "\\|")) %>% 
+    unnest(cols = "rider") %>% 
+    group_by(rider) %>% 
+    summarise(total_dist = sum(distance_miles),
+              total_elev = sum(elevation_metres),
+              dist_xp = total_dist * xp_unit,
+              elev_xp = total_elev * mile_equivalent_climb * xp_unit,
+              total_xp = dist_xp + elev_xp) %>% 
+    crossing(xp_levels) %>% 
+    filter(total_xp <= next_xp,
+           total_xp > xp) %>% 
+    mutate(xp_window = next_xp - xp,
+           percent_level_complete = (total_xp - xp) / xp_window,
+           text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)"),
+           rider = factor(rider),
+           rider = fct_reorder(rider, total_xp))
+  
+  xp_plot <- rider_xp %>% 
+    ggplot(aes(x = rider, y = percent_level_complete)) +
+    # Background bar
+    geom_point(aes(x = rider, y = 0), size = 3, colour = "grey75") +
+    geom_segment(aes(x = rider, y = 0, xend = rider, yend = 1), size = 4, colour = "grey75") +
+    geom_point(aes(x = rider, y = 1), size = 3, colour = "grey75") +
+    # XP bar
+    geom_point(aes(x = rider, y = 0), size = 3) +
+    geom_segment(aes(x = rider, y = 0, xend = rider, yend = percent_level_complete), size = 4) +
+    geom_point(size = 3) +
+    coord_flip() +
+    scale_y_continuous(lim = c(0, 1.3))
+  
+  xp_plot <- ggplotly(xp_plot)
+  
+  return(xp_plot)
+  
+}
+
+
