@@ -4,6 +4,9 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     vertical_layout: fill
+    theme: 
+      version: 4
+      navbar-bg: "#0C2340"
 ---
 
 ```{r setup, include=FALSE}
@@ -28,25 +31,31 @@ Row {data-width=1000}
 ### Miles ridden
 
 ```{r}
-valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle")
+valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "grey25")
 ```
 
 ### Metres climbed
 
 ```{r}
-valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-caret-up")
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-caret-up", color = "grey25")
+```
+
+### Days ridden
+
+```{r}
+valueBox(rides_index$start_datetime %>% as.Date() %>% unique() %>% length(), icon = "fa-sun", color = "grey25")
 ```
 
 ### Ferries taken
 
 ```{r}
-valueBox("8", icon = "fa-ship")
+valueBox("8", icon = "fa-ship", color = "grey25")
 ```
 
 Row 
 -----------------------------------------------------------------------
 
-### Map {data-width=667}
+### Map {data-width=600}
 
 ```{r}
 leaflet() %>% 
@@ -58,7 +67,7 @@ leaflet() %>%
   add_track(full_dataset)
 ```
 
-### Contributors {data-width=333}
+### Contributors {data-width=400}
 
 ```{r}
 draw_xp_plot()
