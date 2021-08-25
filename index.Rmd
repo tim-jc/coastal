@@ -2,7 +2,7 @@
 title: "phïets::coasting"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
     vertical_layout: fill
 ---
 
@@ -22,30 +22,8 @@ load_gps_data(file_location = "gps_data/csv_files/")
 rides_index <- create_summary()
 ```
 
-Column {data-width=650}
+Row {data-width=1000}
 -----------------------------------------------------------------------
-
-### Map
-
-```{r}
-leaflet() %>% 
-  addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
-    attribution = paste(
-      '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-      '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-    )) %>% 
-  add_track(full_dataset)
-```
-
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Contributors
-
-```{r}
-gg <- iris %>% ggplot(aes(x = Species)) + geom_bar(stat = "count") + coord_flip()
-plotly::ggplotly(gg)
-```
 
 ### Miles ridden
 
@@ -63,4 +41,25 @@ valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-caret-up
 
 ```{r}
 valueBox("8", icon = "fa-ship")
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Map {data-width=667}
+
+```{r}
+leaflet() %>% 
+  addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+    attribution = paste(
+      '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+    )) %>% 
+  add_track(full_dataset)
+```
+
+### Contributors {data-width=333}
+
+```{r}
+draw_xp_plot()
 ```
