@@ -1,5 +1,8 @@
 # coastal vis functions / values
 
+
+# Define values -----------------------------------------------------------
+
 # Order rides
 ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
                   "folkestone_bognor", "london_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
@@ -14,6 +17,12 @@ xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 
                     ) %>% 
   mutate(xp_level = seq_along(xp),
          next_xp = lead(xp))
+
+phiets_navy <- "#0C2340"
+phiets_red <- "#D50032"
+
+
+# Functions ---------------------------------------------------------------
 
 gpx_to_df <- function(file_path) {
   
@@ -42,7 +51,7 @@ add_track <- function(leaflet_obj, gpx_df) {
   longitude <- gpx_df$lon
   
   leaflet_obj %>% 
-    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = "navy")
+    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = phiets_navy)
 
 }
 
@@ -134,19 +143,28 @@ draw_xp_plot <- function() {
            rider = fct_reorder(rider, total_xp))
   
   xp_plot <- rider_xp %>% 
-    ggplot(aes(x = rider, y = percent_level_complete)) +
+    ggplot(aes(x = rider, y = percent_level_complete, text = text_label)) +
     # Background bar
-    geom_point(aes(x = rider, y = 0), size = 3, colour = "grey75") +
-    geom_segment(aes(x = rider, y = 0, xend = rider, yend = 1), size = 4, colour = "grey75") +
-    geom_point(aes(x = rider, y = 1), size = 3, colour = "grey75") +
+    geom_segment(aes(x = rider, y = 0, xend = rider, yend = 1), size = 4, colour = "grey85") +
+    geom_point(aes(x = rider, y = 1), size = 3.5, colour = "grey85") +
     # XP bar
-    geom_point(aes(x = rider, y = 0), size = 3) +
-    geom_segment(aes(x = rider, y = 0, xend = rider, yend = percent_level_complete), size = 4) +
-    geom_point(size = 3) +
+    geom_point(aes(x = rider, y = 0), size = 3.5, colour = phiets_red) +
+    geom_segment(aes(x = rider, y = 0, xend = rider, yend = percent_level_complete), size = 4, colour = phiets_red) +
+    geom_point(size = 10, colour = phiets_navy) +
+    geom_point(size = 7, colour = phiets_red) +
+    geom_text(aes(label = xp_level)) +
+    geom_text(aes(y = 1.25, label = str_glue("{floor(total_xp)} XP")), hjust = 0, colour = phiets_navy) +
     coord_flip() +
-    scale_y_continuous(lim = c(0, 1.3))
+    scale_y_continuous(lim = c(0, 1.5)) +
+    theme_minimal() +
+    theme(axis.text.x = element_blank(),
+          axis.text.y = element_text(colour = phiets_navy),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank()) +
+    labs(x = "",
+         y = "")
   
-  xp_plot <- ggplotly(xp_plot)
+  xp_plot <- ggplotly(xp_plot, tooltip = "text")
   
   return(xp_plot)
   
