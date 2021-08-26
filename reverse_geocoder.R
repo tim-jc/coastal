@@ -1,7 +1,8 @@
 # reverse geocoder
 # use this script to add location data to the csv files
-# bit of a nightmare because the reverse geocode crashes
+# bit of a nightmare because the reverse geocode crashes after about 900 calls
 # so need to write out to csv so data isn't lost
+# Restarting R when the counter hits 800 to prevent a force quit
 
 # libraries
 library(tidyverse)
@@ -48,7 +49,7 @@ for (j in 1:nrow(to_code)) {
     lon <- to_code$lon[to_code$id == j]
     
     # location_str <-  revgeo::revgeo(lon, lat)
-    location_str <-  revgeo::revgeo(lon, lat, provider = "bing", API = gmail_account_key)
+    location_str <-  revgeo::revgeo(lon, lat, provider = "bing", API = hca_account_key)
     
     print(paste(j, location_str))
     
@@ -61,4 +62,4 @@ for (j in 1:nrow(to_code)) {
     }
     
 }
-
+?revgeo
