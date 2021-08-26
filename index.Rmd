@@ -7,6 +7,9 @@ output:
     theme: 
       version: 4
       navbar-bg: "#0C2340"
+    navbar: 
+    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
+    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
 ---
 
 ```{r setup, include=FALSE}
