@@ -6,8 +6,12 @@
 
 2 - open coastal_visualisation.R. This will flag any locations that are missing reverse geocoding (ie. no postcode)
 
-3 - open reverse_geocoder.R
+3 - open reverse_geocoder.R and code any locations with missing data
 
-4 - Export png and convert to CMYK colourspace following these instructions - https://www.istudiopublisher.com/help-pages/pgs/cmyk-colors.html
+4 - run coastal_visualisation.R to produce visualisations
 
-5 - Export as PDF using A2 custom size with 4mm unprintable space on each edge
+5 - export png and convert to CMYK colourspace following these instructions - https://www.istudiopublisher.com/help-pages/pgs/cmyk-colors.html
+
+6 - export as PDF using A2 custom size with 4mm unprintable space on each edge
+
+7 - run index.Rmd to update flexdashboard
