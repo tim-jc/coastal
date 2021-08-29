@@ -5,7 +5,7 @@
 
 # Order rides
 ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
-                  "folkestone_bognor", "london_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
+                  "folkestone_bognor", "rochester_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
                   "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
                   "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
 
@@ -45,13 +45,13 @@ gpx_to_df <- function(file_path) {
   
 }
 
-add_track <- function(leaflet_obj, gpx_df) {
+add_track <- function(leaflet_obj, gpx_df, track_colour = phiets_navy) {
   
   latitude <- gpx_df$lat
   longitude <- gpx_df$lon
   
   leaflet_obj %>% 
-    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = phiets_navy)
+    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = track_colour)
 
 }
 
