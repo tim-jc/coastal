@@ -67,7 +67,8 @@ leaflet() %>%
       '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
       '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
     )) %>% 
-  add_track(full_dataset)
+  add_track(full_dataset) %>% 
+  addMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, clusterOptions = markerClusterOptions())
 ```
 
 ### Contributors {data-width=400}
