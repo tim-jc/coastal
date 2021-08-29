@@ -58,14 +58,22 @@ add_track <- function(leaflet_obj, gpx_df, track_colour = phiets_navy) {
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(file_name, ride, riders, direction) %>% 
+    group_by(file_name, ride, riders, strava_link, direction) %>% 
     summarise(start_datetime = min(time),
               finish_datetime = max(time),
+              start_lon = lon[which(time == start_datetime)],
+              start_lat = lat[which(time == start_datetime)],
               distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
               elevation_metres = sum(climb_since_prev, na.rm = T),
               dist_per_elev = distance_miles / elevation_metres,
               yr = lubridate::year(start_datetime)) %>% 
-    ungroup()
+    ungroup() %>% 
+    mutate(ride_pretty = str_replace(ride, "_", " -> ") %>% str_to_title(),
+           riders_pretty = str_replace_all(riders, "\\|", ", "),
+           marker_popup = str_c(ride_pretty, "<br>",
+                                format(start_datetime, "%d-%b-%y"), "<br>",
+                                riders_pretty, "<br>",
+                                "<a href=", strava_link, " target=\"_blank\">Strava"))
   
   return(df)
   
