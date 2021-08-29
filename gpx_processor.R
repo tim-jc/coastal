@@ -43,13 +43,15 @@ input_gpx$time %>% max()
 
 ride_string <- "washford_bristol"
 ride_direction <- "cw"
+strava_link_string <- ""
 riders_string <- "TC|SB|DA|TS|WR"
 
 output_gpx <- input_gpx %>%
   filter(time > "2021-07-01T07:16:22Z" & time < "2021-08-22T16:42:30Z") %>%
   mutate(direction = ride_direction,
          ride = ride_string,
-         riders = riders_string)
+         riders = riders_string, 
+         strava_link = strava_link_string)
 
 # checked cropped ride
 leaflet() %>% 
