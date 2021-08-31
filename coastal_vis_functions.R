@@ -183,12 +183,13 @@ draw_xp_plot <- function() {
 get_image_metadata <- function() {
   
   exifr::read_exif("docs/images",
-            args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription"),
+            args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
             recursive = T) %>% 
     mutate(image_source = str_c("https://raw.githubusercontent.com/tim-jc/coastal/master/docs/images/",FileName),
-           content = str_c("<a href=\"", image_source, "\">",
+           image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
+           marker_popup = str_c("<a href=\"", image_source, "\" target=\"_blank\">",
                            "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
-                           ImageDescription)
+                           image_description)
     )
   
 }
