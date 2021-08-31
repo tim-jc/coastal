@@ -26,6 +26,8 @@ source("coastal_vis_functions.R")
 load_gps_data(file_location = "gps_data/csv_files/")
 
 rides_index <- create_summary()
+
+image_metadata <- get_image_metadata()
 ```
 
 Row {data-width=1000}
@@ -68,7 +70,9 @@ leaflet() %>%
       '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
     )) %>% 
   add_track(full_dataset) %>% 
-  addMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, clusterOptions = markerClusterOptions())
+  addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
+  addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~content, icon = photo_icon, clusterOptions = markerClusterOptions())
+
 ```
 
 ### Contributors {data-width=400}
