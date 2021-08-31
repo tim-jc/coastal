@@ -21,8 +21,8 @@ xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 
 phiets_navy <- "#0C2340"
 phiets_red <- "#D50032"
 
-section_start_icon <- makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "purple", iconColor = "#FFFFFF")
-photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "red", iconColor = "#FFFFFF")
+section_start_icon <- makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "white", iconColor = phiets_navy)
+photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "white", iconColor = phiets_red)
 
 # Functions ---------------------------------------------------------------
 
@@ -182,8 +182,13 @@ draw_xp_plot <- function() {
 
 get_image_metadata <- function() {
   
-  read_exif("docs/images",
-            args = c("-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal"),
-            recursive = T)
+  exifr::read_exif("docs/images",
+            args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription"),
+            recursive = T) %>% 
+    mutate(image_source = str_c("https://raw.githubusercontent.com/tim-jc/coastal/master/docs/images/",FileName),
+           content = str_c("<a href=\"", image_source, "\">",
+                           "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
+                           ImageDescription)
+    )
   
 }
