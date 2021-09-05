@@ -15,16 +15,13 @@ source("coastal_vis_functions.R")
 
 # 1 - load .gpx file ------------------------------------------------------
 
-input_gpx <- gpx_to_df("gps_data/washford_bristol.gpx")
-
-# if you wish to trim an existing csv
-# input_gpx <- read_csv("gps_data/csv_files/maldon_london.csv")
+input_gpx <- gpx_to_df("gps_data/battlesbridge_rochester.gpx")
 
 # 2 - review with leaflet -------------------------------------------------
 
 leaflet() %>% 
   addTiles() %>% 
-  add_track(input_gpx) # %>% 
+  add_track(input_gpx, track_colour = "red") # %>% 
   # add_track(read_csv("gps_data/csv_files/boston_hunstaton.csv")) # add existing track from another ride to compare if needed
 
 # Start / end time
@@ -41,13 +38,13 @@ input_gpx$time %>% max()
 # add ride_string in starttown_finishtown format
 # add riders in initials|initials format (e.g. TC|SB|DA)
 
-ride_string <- "washford_bristol"
+ride_string <- "battlesbridge_rochester"
 ride_direction <- "cw"
-strava_link_string <- ""
-riders_string <- "TC|SB|DA|TS|WR"
+strava_link_string <- "https://www.strava.com/activities/5906287061"
+riders_string <- "TC|SB"
 
 output_gpx <- input_gpx %>%
-  filter(time > "2021-07-01T07:16:22Z" & time < "2021-08-22T16:42:30Z") %>%
+  filter(time > "2021-09-04T07:22:55Z" & time < "2021-09-04T19:15:46Z") %>%
   mutate(direction = ride_direction,
          ride = ride_string,
          riders = riders_string, 
@@ -56,8 +53,9 @@ output_gpx <- input_gpx %>%
 # checked cropped ride
 leaflet() %>% 
   addTiles() %>% 
-  add_track(output_gpx)
-  
+  add_track(output_gpx, track_colour = "red")
+
+
 # 4 - export csv ----------------------------------------------------------
 
-write.csv(output_gpx, str_c("gps_data/",ride_string,".csv"), row.names = F)
+write.csv(output_gpx, str_c("gps_data/csv_files/",ride_string,".csv"), row.names = F)
