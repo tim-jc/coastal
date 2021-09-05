@@ -54,13 +54,13 @@ valueBox(rides_index$start_datetime %>% as.Date() %>% unique() %>% length(), ico
 ### Ferries taken
 
 ```{r}
-valueBox("8", icon = "fa-ship", color = "grey25")
+valueBox("9", icon = "fa-ship", color = "grey25")
 ```
 
 Row 
 -----------------------------------------------------------------------
 
-### Map {data-width=600}
+### Map {data-width=650}
 
 ```{r}
 leaflet() %>% 
@@ -71,11 +71,11 @@ leaflet() %>%
     )) %>% 
   add_track(full_dataset) %>% 
   addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
-  addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~content, icon = photo_icon, clusterOptions = markerClusterOptions())
+  addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
 
 ```
 
-### Contributors {data-width=400}
+### Contributors {data-width=350}
 
 ```{r}
 draw_xp_plot()
