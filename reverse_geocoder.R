@@ -15,22 +15,22 @@ source("coastal_vis_functions.R")
 hca_account_key <- "AmmKMFzPTOsRpX1M8orYkCmkTA_A-0q9UB980GE16xIY0mQ0UYYmX_IX49Hs_UqQ"
 gmail_account_key <- "AvF_1ohpw9KtMUOazP0qqIY6-1MVT8YWyUQqQktYT-oPml7J-mjzL4mTyhedkIZQ" 
 
-to_code <- read_csv("locations_to_map.csv") %>% 
+to_code <- read_csv("csv/locations_to_map.csv") %>% 
   select(lat, lon) %>% 
   distinct() 
   
-coded <- read_csv("reverse_geocoding.csv") %>% 
+coded <- read_csv("csv/reverse_geocoding.csv") %>% 
   distinct() %>% 
   mutate(has_postcode = str_detect(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}")) %>% 
   filter(has_postcode) %>% 
   select(-has_postcode)
 
-write_csv(coded, "reverse_geocoding.csv")
+write_csv(coded, "csv/reverse_geocoding.csv")
 
 to_code %<>%
   anti_join(coded) 
 
-write_csv(to_code, "locations_to_map.csv")
+write_csv(to_code, "csv/locations_to_map.csv")
 
 # view points to be coded
 leaflet() %>% 
@@ -55,11 +55,11 @@ for (j in 1:nrow(to_code)) {
     
     out <- data.frame(lon, lat, location_str)
     
-    write_csv(out, "reverse_geocoding.csv", append = T)
+    write_csv(out, "csv/reverse_geocoding.csv", append = T)
     
     if(j > 800) {
       .rs.restartR()
     }
     
 }
-?revgeo
+
