@@ -36,7 +36,7 @@ uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", 
 full_dataset %>% 
   filter(is.na(postcode)) %>% 
   select(lon, lat) %>% 
-  write_csv("locations_to_map.csv")
+  write_csv("csv/locations_to_map.csv")
 
 # View route in leaflet ---------------------------------------------------
 
