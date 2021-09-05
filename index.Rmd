@@ -17,6 +17,7 @@ library(flexdashboard)
 library(tidyverse)
 library(plotly)
 library(leaflet)
+library(lubridate)
 
 # clear the memory
 rm(list=ls(all = TRUE))
@@ -29,6 +30,9 @@ rides_index <- create_summary()
 
 image_metadata <- get_image_metadata()
 ```
+
+Maps
+===================================== 
 
 Row {data-width=1000}
 -----------------------------------------------------------------------
@@ -60,22 +64,22 @@ valueBox("9", icon = "fa-ship", color = "grey25")
 Row 
 -----------------------------------------------------------------------
 
-### Map {data-width=650}
+### Overall progress {data-width=650}
 
 ```{r}
-leaflet() %>% 
-  addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
-    attribution = paste(
-      '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-      '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-    )) %>% 
-  add_track(full_dataset) %>% 
-  addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
-  addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
-
+draw_map("all")
 ```
 
-### Contributors {data-width=350}
+### Latest ride {data-width=350}
+
+```{r}
+draw_map("latest")
+```
+
+Stats
+===================================== 
+
+### Contributors
 
 ```{r}
 draw_xp_plot()
