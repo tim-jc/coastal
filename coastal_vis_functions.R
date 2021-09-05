@@ -5,7 +5,7 @@
 
 # Order rides
 ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
-                  "folkestone_bognor", "rochester_folkestone", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
+                  "folkestone_bognor", "rochester_folkestone", "battlesbridge_rochester", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
                   "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
                   "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
 
@@ -116,12 +116,12 @@ load_gps_data <- function(file_location = NA_character_) {
   }
   
   full_dataset <- full_dataset %>% 
-    left_join(read_csv("reverse_geocoding.csv"), by = c("lon", "lat")) %>% 
+    left_join(read_csv("csv/reverse_geocoding.csv"), by = c("lon", "lat")) %>% 
     mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
            town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
            ride = factor(ride, levels = ride_levels, ordered = T)) %>% 
     arrange(ride) %>% 
-    left_join(read_csv("open_postcode_elevation.csv"), by = "postcode") %>% 
+    left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
     mutate(id = seq(1,nrow(.),1))
   
   # write out bound dataset
