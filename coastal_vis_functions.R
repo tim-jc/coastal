@@ -70,12 +70,22 @@ create_summary <- function() {
               dist_per_elev = distance_miles / elevation_metres,
               yr = lubridate::year(start_datetime)) %>% 
     ungroup() %>% 
-    mutate(ride_pretty = str_replace(ride, "_", " -> ") %>% str_to_title(),
+    arrange(start_datetime) %>% 
+    mutate(start_date = as.Date(start_datetime),
+           is_latest_ride = start_datetime == max(start_datetime),
+           ride_prev_day = start_date == lag(start_date) + days(1),
+           ride_next_day = start_date == lead(start_date) - days(1),
+           is_new_adventure = case_when(!ride_prev_day | is.na(ride_prev_day) ~ T),
+           ride_pretty = str_replace(ride, "_", " -> ") %>% str_to_title(),
            riders_pretty = str_replace_all(riders, "\\|", ", "),
            marker_popup = str_c(ride_pretty, "<br>",
                                 format(start_datetime, "%d-%b-%y"), "<br>",
                                 riders_pretty, "<br>",
-                                "<a href=", strava_link, " target=\"_blank\">Strava"))
+                                "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
+    replace_na(list(is_new_adventure = F)) %>% 
+    mutate(adventure_id = cumsum(is_new_adventure),
+           is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]) %>% 
+    select(-c(ride_prev_day, ride_next_day, is_new_adventure))
   
   return(df)
   
@@ -180,12 +190,46 @@ draw_xp_plot <- function() {
   
 }
 
+draw_map <- function(map_type) {
+  
+  map <- leaflet() %>% 
+    addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+             attribution = paste(
+               '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+               '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+             ))
+  
+  if(map_type == "all") {
+    
+    map <- map %>% 
+      add_track(full_dataset) %>% 
+      addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
+      addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
+    
+  }
+  
+  if(map_type == "latest") {
+    
+    rides <- rides_index %>% filter(is_latest_adventure)
+    
+    map <- map %>% 
+      add_track(full_dataset %>% filter(ride %in% rides$ride)) %>% 
+      addAwesomeMarkers(data = rides_index %>% filter(ride %in% rides$ride), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
+      addAwesomeMarkers(data = image_metadata %>% filter(image_date %in% rides$start_date), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
+    
+  }
+  
+  return(map)
+  
+}
+
 get_image_metadata <- function() {
   
   exifr::read_exif("docs/images",
             args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
             recursive = T) %>% 
-    mutate(image_source = str_c("https://raw.githubusercontent.com/tim-jc/coastal/master/docs/images/",FileName),
+    mutate(image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
+           image_source = str_c("https://raw.githubusercontent.com/tim-jc/coastal/master/docs/images/",FileName),
            image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
            marker_popup = str_c("<a href=\"", image_source, "\" target=\"_blank\">",
                            "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
