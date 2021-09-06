@@ -58,19 +58,19 @@ valueBox(rides_index$start_datetime %>% as.Date() %>% unique() %>% length(), ico
 ### Ferries taken
 
 ```{r}
-valueBox("9", icon = "fa-ship", color = "grey25")
+valueBox("8", icon = "fa-ship", color = "grey25")
 ```
 
 Row 
 -----------------------------------------------------------------------
 
-### Overall progress {data-width=650}
+### Overall progress
 
 ```{r}
 draw_map("all")
 ```
 
-### Latest ride {data-width=350}
+### Latest ride
 
 ```{r}
 draw_map("latest")
