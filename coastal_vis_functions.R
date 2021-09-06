@@ -215,7 +215,8 @@ draw_map <- function(map_type) {
     map <- map %>% 
       add_track(full_dataset %>% filter(ride %in% rides$ride)) %>% 
       addAwesomeMarkers(data = rides_index %>% filter(ride %in% rides$ride), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
-      addAwesomeMarkers(data = image_metadata %>% filter(image_date %in% rides$start_date), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
+      addAwesomeMarkers(data = image_metadata %>% filter(image_date %in% rides$start_date), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions()) %>% 
+      addMiniMap()
     
   }
   
