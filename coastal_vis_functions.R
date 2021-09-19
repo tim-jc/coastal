@@ -201,6 +201,29 @@ draw_xp_plot <- function() {
   
 }
 
+draw_time_plot <- function() {
+  
+  time_plot <- full_dataset %>% 
+    mutate(gpx_point_time = update(time, day = 1, month = 1, year = 2020)) %>% 
+    ggplot(aes(x = gpx_point_time)) +
+    geom_freqpoly(binwidth = 300, colour = phiets_red) + 
+    scale_x_datetime(labels = function(x) format(x, "%H:%M"), breaks = "2 hour") +
+    labs(x = "",
+         y = "") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(colour = phiets_navy),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          panel.grid = element_blank())
+  
+  time_plot <- ggplotly(time_plot)
+  
+  time_plot <- style(time_plot, hoverinfo = "none")
+  
+  return(time_plot)
+  
+}
+
 draw_map <- function(map_type) {
   
   map <- leaflet() %>% 
