@@ -1,5 +1,16 @@
 # coastal vis functions / values
 
+# Establish Strava connection ---------------------------------------------
+
+app_name <- 'coastal_datavis' # chosen by user
+app_client_id  <- '53709' # an integer, assigned by Strava
+app_secret <- '4f5778009ce59f130203ef927694029d518ea3ff' # an alphanumeric secret, assigned by Strava
+
+# create the authentication token - only do this once to cache the token in the working directory
+# stoken <- httr::config(token = strava_oauth(app_name, app_client_id, app_secret, app_scope="activity:read_all", cache = T))
+
+# once token created / cached in working directoty, use the below to load it
+stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 
 # Define values -----------------------------------------------------------
 
