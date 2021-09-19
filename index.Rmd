@@ -18,6 +18,7 @@ library(tidyverse)
 library(plotly)
 library(leaflet)
 library(lubridate)
+library(rStrava)
 
 # clear the memory
 rm(list=ls(all = TRUE))
@@ -83,4 +84,10 @@ Stats
 
 ```{r}
 draw_xp_plot()
+```
+
+### Activity by time of day
+
+```{r}
+draw_time_plot()
 ```
