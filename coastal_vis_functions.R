@@ -272,3 +272,30 @@ get_image_metadata <- function() {
     )
   
 }
+
+get_coord_valuebox <- function(pos_needed) {
+  
+  if(pos_needed == "N") {
+    df <- full_dataset %>% filter(lat == max(lat))
+    icon_str <- "fa-arrow-up"
+  }
+  
+  if(pos_needed == "S") {
+    df <- full_dataset %>% filter(lat == min(lat))
+    icon_str <- "fa-arrow-down"
+  }
+  
+  if(pos_needed == "E") {
+    df <- full_dataset %>% filter(lon == max(lon))
+    icon_str <- "fa-arrow-right"
+  }
+  
+  if(pos_needed == "W") {
+    df <- full_dataset %>% filter(lon == min(lon))
+    icon_str <- "fa-arrow-left"
+  }
+  
+  link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lon>0,str_c(df$lon,\"E\"),str_c(0 - df$lon,\"W\"))}")
+  
+  valueBox(df$town, icon = icon_str, color = "grey25", href = link_str)
+}
