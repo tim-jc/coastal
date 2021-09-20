@@ -35,7 +35,7 @@ image_metadata <- get_image_metadata()
 Maps
 ===================================== 
 
-Row {data-width=1000}
+Row
 -----------------------------------------------------------------------
 
 ### Miles ridden
@@ -47,7 +47,7 @@ valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", 
 ### Metres climbed
 
 ```{r}
-valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-caret-up", color = "grey25")
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "grey25")
 ```
 
 ### Days ridden
@@ -79,6 +79,36 @@ draw_map("latest")
 
 Stats
 ===================================== 
+
+Row
+-----------------------------------------------------------------------
+
+### Most Northerly
+
+```{r}
+get_coord_valuebox("N")
+```
+
+### Most Southerly
+
+```{r}
+get_coord_valuebox("S")
+```
+
+### Most Easterly
+
+```{r}
+get_coord_valuebox("E")
+```
+
+### Most Westerly
+
+```{r}
+get_coord_valuebox("W")
+```
+
+Row
+-----------------------------------------------------------------------
 
 ### Contributors
 
