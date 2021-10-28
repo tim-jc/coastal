@@ -235,8 +235,13 @@ draw_map <- function(map_type) {
   
   if(map_type == "all") {
     
+    for(ride_name in full_dataset$ride %>% unique()) {
+      
+      map <- map %>% add_track(full_dataset %>% filter(ride == ride_name))
+      
+    }
+    
     map <- map %>% 
-      add_track(full_dataset) %>% 
       addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
       addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
     
