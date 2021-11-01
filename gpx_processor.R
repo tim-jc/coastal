@@ -15,7 +15,7 @@ source("coastal_vis_functions.R")
 
 # 1 - load .gpx file ------------------------------------------------------
 
-input_gpx <- gpx_to_df("gps_data/battlesbridge_rochester.gpx")
+input_gpx <- gpx_to_df("gps_data/seascale_carlisle.gpx")
 
 # 2 - review with leaflet -------------------------------------------------
 
@@ -38,13 +38,13 @@ input_gpx$time %>% max()
 # add ride_string in starttown_finishtown format
 # add riders in initials|initials format (e.g. TC|SB|DA)
 
-ride_string <- "battlesbridge_rochester"
+ride_string <- "seascale_carlisle"
 ride_direction <- "cw"
-strava_link_string <- "https://www.strava.com/activities/5906287061"
-riders_string <- "TC|SB"
+strava_link_string <- "https://www.strava.com/activities/6193006840"
+riders_string <- "TC|SB|WR"
 
 output_gpx <- input_gpx %>%
-  filter(time > "2021-09-04T07:22:55Z" & time < "2021-09-04T19:15:46Z") %>%
+  # filter(time > "2021-09-04T07:22:55Z" & time < "2021-09-04T19:15:46Z") %>%
   mutate(direction = ride_direction,
          ride = ride_string,
          riders = riders_string, 
