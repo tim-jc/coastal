@@ -15,7 +15,7 @@ stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 # Define values -----------------------------------------------------------
 
 # Order rides
-ride_levels <-  c("washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
+ride_levels <-  c("seascale_carlisle","lancaster_seascale","chester_lancaster","washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
                   "folkestone_bognor", "rochester_folkestone", "battlesbridge_rochester", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
                   "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
                   "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
@@ -235,29 +235,29 @@ draw_map <- function(map_type) {
   
   if(map_type == "all") {
     
-    for(ride_name in full_dataset$ride %>% unique()) {
-      
-      map <- map %>% add_track(full_dataset %>% filter(ride == ride_name))
-      
-    }
+    ride_names <- full_dataset$ride %>% unique()
     
-    map <- map %>% 
-      addAwesomeMarkers(data = rides_index, lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
-      addAwesomeMarkers(data = image_metadata, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
+    images <- image_metadata
     
   }
   
   if(map_type == "latest") {
     
-    rides <- rides_index %>% filter(is_latest_adventure)
+    ride_names <- rides_index %>% filter(is_latest_adventure) %>% pull(ride)
     
-    map <- map %>% 
-      add_track(full_dataset %>% filter(ride %in% rides$ride)) %>% 
-      addAwesomeMarkers(data = rides_index %>% filter(ride %in% rides$ride), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
-      addAwesomeMarkers(data = image_metadata %>% filter(image_date %in% rides$start_date), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions()) %>% 
-      addMiniMap()
+    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_datetime) %>% as.Date()))
     
   }
+  
+  for(ride_name in ride_names) {
+    
+    map <- map %>% add_track(full_dataset %>% filter(ride == ride_name))
+    
+  }
+  
+  map <- map %>% 
+    addAwesomeMarkers(data = rides_index %>% filter(ride %in% ride_names), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions()) %>% 
+    addAwesomeMarkers(data = images %>% filter(), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions())
   
   return(map)
   
