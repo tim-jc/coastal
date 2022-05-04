@@ -117,12 +117,14 @@ load_gps_data <- function(file_location = NA_character_) {
   file_names <- list.files()
 
   for (j in file_names) {
+    
+    str_glue("Loading {j}") %>% print()
 
       df_load <- readr::read_csv(j)
       df_load <- df_load %>% select(-extensions)
       
       # Make sure all rides are going in the same direction
-      if (df_load$direction == "cw") {
+      if (unique(df_load$direction) == "cw") {
         
         df_load <- df_load %>% arrange(desc(time))
         
@@ -137,8 +139,10 @@ load_gps_data <- function(file_location = NA_character_) {
     setwd(old_wd)
   }
   
+  geocodes <- DBI::dbConnect(RSQLite::SQLite(), "coastal.db") %>% DBI::dbReadTable("geocodes")
+  
   full_dataset <- full_dataset %>% 
-    left_join(read_csv("csv/reverse_geocoding.csv"), by = c("lon", "lat")) %>% 
+    left_join(geocodes, by = c("lon", "lat")) %>% 
     mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
            town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
            ride = factor(ride, levels = ride_levels, ordered = T)) %>% 
