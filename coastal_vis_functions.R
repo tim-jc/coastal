@@ -15,9 +15,10 @@ stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 # Define values -----------------------------------------------------------
 
 # Order rides
-ride_levels <-  c("seascale_carlisle","lancaster_seascale","chester_lancaster","washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth","exmouth_bournemouth",
-                  "folkestone_bognor", "rochester_folkestone", "battlesbridge_rochester", "maldon_battlesbridge", "maldon_clacton", "clacton_manningtree",
-                  "woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
+ride_levels <-  c("skye_strathcarron","acharacle_skye","oban_acharacle","tarbert_oban","arran_tarbert","ardrossan_arran","seascale_carlisle",
+                  "lancaster_seascale","chester_lancaster","washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth",
+                  "exmouth_bournemouth","folkestone_bognor", "rochester_folkestone", "battlesbridge_rochester", "maldon_battlesbridge", "maldon_clacton",
+                  "clacton_manningtree","woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
                   "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
 
 xp_unit <- 15
