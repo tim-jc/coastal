@@ -14,13 +14,6 @@ stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 
 # Define values -----------------------------------------------------------
 
-# Order rides
-ride_levels <-  c("skye_strathcarron","acharacle_skye","oban_acharacle","tarbert_oban","arran_tarbert","ardrossan_arran","seascale_carlisle",
-                  "lancaster_seascale","chester_lancaster","washford_bristol","tintagel_washford","penzance_tintagel","penzance_looe","looe_exmouth",
-                  "exmouth_bournemouth","folkestone_bognor", "rochester_folkestone", "battlesbridge_rochester", "maldon_battlesbridge", "maldon_clacton",
-                  "clacton_manningtree","woodbridge_manningtree", "orford_woodbridge", "snape_orford","southwold_snape", "hunstanton_southwold",
-                  "boston_hunstaton", "boston_hull", "hull_staithes", "staithes_newcastle")
-
 xp_unit <- 15
 
 xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
@@ -38,62 +31,62 @@ photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = 
 
 # Functions ---------------------------------------------------------------
 
-gpx_to_df <- function(file_path) {
+load_gps_data <- function() {
   
-  # read gpx file and convert to df
-  df <- plotKML::readGPX(file_path)
-  df <- df$tracks[[1]][[1]] %>% as.tibble()
-  df <- df %>% mutate(ele = as.numeric(ele))
+  # Connect to SQLite DB, pull down all ride data, get geocode data
+  con <- dbConnect(RSQLite::SQLite(), "coastal.db") 
+  ride_streams <- dbReadTable(con, "ride_streams")
+  geocodes <- DBI::dbConnect(RSQLite::SQLite(), "coastal.db") %>% DBI::dbReadTable("geocodes")
   
-  # calculate distance in miles and climb in meters between each point
-  df <- df %>% 
-    mutate(prev_lon = lag(lon),
+  # Arrange dataframe
+  ride_streams <- ride_streams %>% 
+    mutate(sort_time = if_else(ride_direction == "cw", -time, time),
+           ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
+           ride_start = as.POSIXct(ride_start, origin = lubridate::origin),
+           yr = lubridate::year(ride_start)) %>% 
+    arrange(ride_name, sort_time) %>% 
+    left_join(geocodes, by = c("lng" = "lon", "lat")) %>% 
+    mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
+           town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
+    ) %>% 
+    left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
+    mutate(id = seq(1,nrow(.),1))
+  
+  ride_streams <- ride_streams %>% 
+    group_by(strava_id) %>% 
+    mutate(prev_lng = lag(lng),
            prev_lat = lag(lat),
-           prev_ele = lag(ele),
-           longlat1 = map2(lon, lat, function(x,y) c(x,y)),
-           longlat2 = map2(prev_lon, prev_lat, function(x,y) c(x,y)),
+           prev_alt = lag(altitude),
+           longlat1 = map2(lng, lat, function(x,y) c(x,y)),
+           longlat2 = map2(prev_lng, prev_lat, function(x,y) c(x,y)),
            dist_since_prev = map2(longlat1, longlat2, function(x,y) geosphere::distm(x,y)) %>% unlist(),
-           climb_since_prev = if_else(ele > prev_ele, ele - prev_ele, 0),
-           file_name = str_remove(file_path, "gps_data/")) %>% 
-    select(-matches("^longlat"))
+           climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)) %>% 
+    select(-matches("^longlat")) %>% 
+    ungroup()
   
-}
-
-add_track <- function(leaflet_obj, gpx_df, track_colour = phiets_navy) {
   
-  latitude <- gpx_df$lat
-  longitude <- gpx_df$lon
+  return(ride_streams)
   
-  leaflet_obj %>% 
-    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = track_colour)
-
 }
 
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(file_name, ride, riders, strava_link, direction) %>% 
+    group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
     summarise(start_datetime = min(time),
               finish_datetime = max(time),
-              start_lon = lon[which(time == start_datetime)],
+              start_lon = lng[which(time == start_datetime)],
               start_lat = lat[which(time == start_datetime)],
               distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
               elevation_metres = sum(climb_since_prev, na.rm = T),
-              dist_per_elev = distance_miles / elevation_metres,
-              yr = lubridate::year(start_datetime)) %>% 
+              dist_per_elev = distance_miles / elevation_metres) %>% 
     ungroup() %>% 
-    arrange(start_datetime) %>% 
-    mutate(start_date = as.Date(start_datetime),
-           is_latest_ride = start_datetime == max(start_datetime),
+    arrange(ride_start) %>% 
+    mutate(start_date = as.Date(ride_start),
+           is_latest_ride = start_date == max(start_date),
            ride_prev_day = start_date == lag(start_date) + days(1),
            ride_next_day = start_date == lead(start_date) - days(1),
-           is_new_adventure = case_when(!ride_prev_day | is.na(ride_prev_day) ~ T),
-           ride_pretty = str_replace(ride, "_", " -> ") %>% str_to_title(),
-           riders_pretty = str_replace_all(riders, "\\|", ", "),
-           marker_popup = str_c(ride_pretty, "<br>",
-                                format(start_datetime, "%d-%b-%y"), "<br>",
-                                riders_pretty, "<br>",
-                                "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
+           is_new_adventure = case_when(!ride_prev_day | is.na(ride_prev_day) ~ T)) %>% 
     replace_na(list(is_new_adventure = F)) %>% 
     mutate(adventure_id = cumsum(is_new_adventure),
            is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]) %>% 
@@ -103,56 +96,55 @@ create_summary <- function() {
   
 }
 
-load_gps_data <- function(file_location = NA_character_) {
-
-   full_dataset <- tibble()
+draw_map <- function(map_type) {
+  
+  map <- leaflet() %>% 
+    addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+             attribution = paste(
+               '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+               '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+             ))
+  
+  if(map_type == "all") {
     
-   if (!is.na(file_location)) {
+    ride_names <- full_dataset$ride_name %>% unique()
     
-    old_wd <- getwd()
-    setwd(file_location)
+    images <- image_metadata
     
   }
   
-  file_names <- list.files()
-
-  for (j in file_names) {
+  if(map_type == "latest") {
     
-    str_glue("Loading {j}") %>% print()
-
-      df_load <- readr::read_csv(j)
-      df_load <- df_load %>% select(-extensions)
-      
-      # Make sure all rides are going in the same direction
-      if (unique(df_load$direction) == "cw") {
-        
-        df_load <- df_load %>% arrange(desc(time))
-        
-      }
-      
-      full_dataset <- bind_rows(full_dataset,
-                                df_load)
-
+    ride_names <- rides_index %>% filter(is_latest_adventure) %>% pull(ride_name)
+    
+    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_datetime) %>% as.Date()))
+    
   }
   
-  if (!is.na(file_location)) {
-    setwd(old_wd)
+  for(i in ride_names) {
+    
+    map <- map %>% add_track(full_dataset %>% filter(ride_name == i))
+    
   }
   
-  geocodes <- DBI::dbConnect(RSQLite::SQLite(), "coastal.db") %>% DBI::dbReadTable("geocodes")
+  map <- map %>% 
+    addAwesomeMarkers(data = rides_index %>% filter(ride_name %in% ride_names), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_name, icon = section_start_icon, clusterOptions = markerClusterOptions(), group = "Ride start points") %>% 
+    addAwesomeMarkers(data = images %>% filter(), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos") %>% 
+    addLayersControl(overlayGroups = c("Photos", "Ride start points"),
+                     options = layersControlOptions(collapsed = F))
   
-  full_dataset <- full_dataset %>% 
-    left_join(geocodes, by = c("lon", "lat")) %>% 
-    mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
-           town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
-           ride = factor(ride, levels = ride_levels, ordered = T)) %>% 
-    arrange(ride) %>% 
-    left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
-    mutate(id = seq(1,nrow(.),1))
+  return(map)
   
-  # write out bound dataset
-  assign("full_dataset", full_dataset, envir = .GlobalEnv)
+}
+
+add_track <- function(leaflet_obj, gpx_df, track_colour = phiets_navy) {
   
+  latitude <- gpx_df$lat
+  longitude <- gpx_df$lng
+  
+  leaflet_obj %>% 
+    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = track_colour)
+
 }
 
 draw_xp_plot <- function() {
@@ -206,6 +198,7 @@ draw_xp_plot <- function() {
   
 }
 
+# To fix
 draw_time_plot <- function() {
   
   time_plot <- full_dataset %>% 
@@ -226,47 +219,6 @@ draw_time_plot <- function() {
   time_plot <- style(time_plot, hoverinfo = "none")
   
   return(time_plot)
-  
-}
-
-draw_map <- function(map_type) {
-  
-  map <- leaflet() %>% 
-    addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
-             attribution = paste(
-               '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-               '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-             ))
-  
-  if(map_type == "all") {
-    
-    ride_names <- full_dataset$ride %>% unique()
-    
-    images <- image_metadata
-    
-  }
-  
-  if(map_type == "latest") {
-    
-    ride_names <- rides_index %>% filter(is_latest_adventure) %>% pull(ride)
-    
-    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_datetime) %>% as.Date()))
-    
-  }
-  
-  for(ride_name in ride_names) {
-    
-    map <- map %>% add_track(full_dataset %>% filter(ride == ride_name))
-    
-  }
-  
-  map <- map %>% 
-    addAwesomeMarkers(data = rides_index %>% filter(ride %in% ride_names), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_pretty, icon = section_start_icon, clusterOptions = markerClusterOptions(), group = "Ride start points") %>% 
-    addAwesomeMarkers(data = images %>% filter(), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos") %>% 
-    addLayersControl(overlayGroups = c("Photos", "Ride start points"),
-                     options = layersControlOptions(collapsed = F))
-  
-  return(map)
   
 }
 
@@ -298,12 +250,12 @@ get_coord_valuebox <- function(pos_needed) {
   }
   
   if(pos_needed == "E") {
-    df <- full_dataset %>% filter(lon == max(lon))
+    df <- full_dataset %>% filter(lng == max(lng))
     icon_str <- "fa-arrow-right"
   }
   
   if(pos_needed == "W") {
-    df <- full_dataset %>% filter(lon == min(lon))
+    df <- full_dataset %>% filter(lng == min(lng))
     icon_str <- "fa-arrow-left"
   }
   
