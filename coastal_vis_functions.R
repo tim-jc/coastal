@@ -14,6 +14,45 @@ stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 
 # Define values -----------------------------------------------------------
 
+# Master table of activities. New activities to be added here, in geographical order
+coastal_activities <- tribble(
+  ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
+  7081454837, "harrapool", "strathcarron", "cw", "TC|SB|WR", 0, 10442,
+  7076591578, "acharacle", "harrapool", "cw", "TC|SB|WR", 0, 26453,
+  7072272567, "oban", "acharacle", "cw", "TC|SB|WR", 0, 34095,
+  7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 0, 33371,
+  7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 33382,
+  7055062883, "ardrossan", "whiting bay", "cw", "TC|SB|WR", 7920, 16788,
+  # Carlisle -> Glasgow adventure here
+  6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
+  6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 0, 42273,
+  6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43692,
+  # Wales adventure here
+  5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27310,
+  5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
+  5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
+  5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51318,
+  5564763338, "looe", "exmouth", "acw", "TC|SB|DA", 0, 44658,
+  5575822827, "exmouth", "bournemouth", "acw", "TC|SB|DA", 0, 45082,
+  # Bournmouth -> Bognor
+  1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
+  1250104735, "rochester", "folkestone", "cw", "TC|SB", 10425, 40297,
+  5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
+  177822252, "maldon", "battlesbridge", "cw", "TC", 13000, 25175,
+  31856491, "maldon", "clacton", "acw", "TC", 12280, 23817,
+  33329545, "clacton", "manningtree", "acw", "TC", 4700, 18254,
+  754726575, "woodbridge", "manningtree", "cw", "TC|AH",  0, 11150,
+  1323036676, "orford", "woodbridge", "acw", "TC", 0, 10000,
+  428214670, "snape", "orford", "cw", "TC", 2350, 4000,
+  233045883, "southwold", "snape", "cw", "TC|SB", 7175, 20430,
+  753905298, "hunstanton", "southwold", "cw", "TC|AH" , 0, 35020,
+  870993393, "boston", "hunstanton", "cw", "TC", 16250, 28975,
+  4049860168, "boston", "hull", "acw", "TC|SB|DA", 205, 33323,
+  4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
+  4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 24371
+) %>% 
+  mutate(ride_name = str_glue("{from} -> {to}"))
+
 xp_unit <- 15
 
 xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
@@ -63,7 +102,6 @@ load_gps_data <- function() {
            climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)) %>% 
     select(-matches("^longlat")) %>% 
     ungroup()
-  
   
   return(ride_streams)
   
@@ -117,7 +155,7 @@ draw_map <- function(map_type) {
     
     ride_names <- rides_index %>% filter(is_latest_adventure) %>% pull(ride_name)
     
-    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_datetime) %>% as.Date()))
+    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_date)))
     
   }
   
@@ -259,7 +297,7 @@ get_coord_valuebox <- function(pos_needed) {
     icon_str <- "fa-arrow-left"
   }
   
-  link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lon>0,str_c(df$lon,\"E\"),str_c(0 - df$lon,\"W\"))}")
+  link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lng>0,str_c(df$lng,\"E\"),str_c(0 - df$lng,\"W\"))}")
   
   valueBox(df$town, icon = icon_str, color = "grey25", href = link_str)
 }
