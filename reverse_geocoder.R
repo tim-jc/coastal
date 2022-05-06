@@ -19,17 +19,14 @@ source("coastal_vis_functions.R")
 hca_account_key <- "AmmKMFzPTOsRpX1M8orYkCmkTA_A-0q9UB980GE16xIY0mQ0UYYmX_IX49Hs_UqQ"
 gmail_account_key <- "AvF_1ohpw9KtMUOazP0qqIY6-1MVT8YWyUQqQktYT-oPml7J-mjzL4mTyhedkIZQ" 
 
-# Get set of coded lat / lon from SQLite DB
-con <- dbConnect(RSQLite::SQLite(), "coastal.db")
+# Get set of coded lat / lon and streams data from SQLite DB
+ride_streams <- dbReadTable(con, "ride_streams")
 coded <- dbReadTable(con, "geocodes")
 
 # Load set of uncoded lat / lon
-to_code <- read_csv("csv/locations_to_map.csv") %>% 
-  select(lat, lon) %>% 
-  distinct() %>%
-  anti_join(coded)
-
-write_csv(to_code, "csv/locations_to_map.csv")
+to_code <- ride_streams %>% 
+  left_join(coded) %>% 
+  filter(is.na(location_string))
 
 # view points to be coded
 leaflet() %>% 
@@ -45,14 +42,14 @@ to_code <- to_code[rows,] %>%
 for (j in 1:nrow(to_code)) {
   
   lat <- to_code$lat[to_code$id == j]
-  lon <- to_code$lon[to_code$id == j]
+  lng <- to_code$lng[to_code$id == j]
   
-  # location_string <-  revgeo::revgeo(lon, lat)
-  location_string <-  revgeo::revgeo(lon, lat, provider = "bing", API = hca_account_key) %>% unlist()
+  # location_string <-  revgeo::revgeo(lng, lat)
+  location_string <-  revgeo::revgeo(lng, lat, provider = "bing", API = hca_account_key) %>% unlist()
   
   print(paste(j, location_string))
   
-  out <- tibble(lon, lat, location_string) %>% 
+  out <- tibble(lng, lat, location_string) %>% 
     mutate(has_postcode = str_detect(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"))
   
   if(out$has_postcode) {
@@ -65,4 +62,3 @@ for (j in 1:nrow(to_code)) {
   }
   
 }
-
