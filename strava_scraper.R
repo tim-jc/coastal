@@ -31,7 +31,7 @@ coastal_activities <- coastal_activities %>%
 con <- dbConnect(RSQLite::SQLite(), "coastal.db")
 ride_streams <- dbReadTable(con, "ride_streams")
 write_csv(ride_streams,
-          str_glue("ride_streams_backup_{Sys.Date()}.csv"))
+          str_glue("csv/ride_streams_backup_{Sys.Date()}.csv"))
 
 # Get stream data for all activities
 coastal_activity_streams <- get_activity_list(stoken) %>% compile_activities() %>% filter(id %in% coastal_activities$strava_id) %>% get_activity_streams(stoken)
