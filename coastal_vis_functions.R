@@ -14,6 +14,9 @@ stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
 
 # Define values -----------------------------------------------------------
 
+# SQLite DB connection
+con <- dbConnect(RSQLite::SQLite(), "coastal.db")
+
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
@@ -51,7 +54,7 @@ coastal_activities <- tribble(
   4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
   4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 24371
 ) %>% 
-  mutate(ride_name = str_glue("{from} -> {to}"))
+  mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"))
 
 xp_unit <- 15
 
@@ -82,9 +85,10 @@ load_gps_data <- function() {
     mutate(sort_time = if_else(ride_direction == "cw", -time, time),
            ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
            ride_start = as.POSIXct(ride_start, origin = lubridate::origin),
+           time_of_day = ride_start + seconds(time),
            yr = lubridate::year(ride_start)) %>% 
     arrange(ride_name, sort_time) %>% 
-    left_join(geocodes, by = c("lng" = "lon", "lat")) %>% 
+    left_join(geocodes, by = c("lng", "lat")) %>% 
     mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
            town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
     ) %>% 
@@ -236,11 +240,10 @@ draw_xp_plot <- function() {
   
 }
 
-# To fix
 draw_time_plot <- function() {
   
   time_plot <- full_dataset %>% 
-    mutate(gpx_point_time = update(time, day = 1, month = 1, year = 2020)) %>% 
+    mutate(gpx_point_time = update(time_of_day, day = 1, month = 1, year = 2020)) %>% 
     ggplot(aes(x = gpx_point_time)) +
     geom_freqpoly(binwidth = 300, colour = phiets_red) + 
     scale_x_datetime(labels = function(x) format(x, "%H:%M"), breaks = "2 hour") +
