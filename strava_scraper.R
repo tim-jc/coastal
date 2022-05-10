@@ -28,7 +28,6 @@ coastal_activities <- coastal_activities %>%
  select(-strava_data)
 
 # Connect to SQLite DB, retrieve rides already loaded, export backup
-con <- dbConnect(RSQLite::SQLite(), "coastal.db")
 ride_streams <- dbReadTable(con, "ride_streams")
 write_csv(ride_streams,
           str_glue("csv/ride_streams_backup_{Sys.Date()}.csv"))
