@@ -17,14 +17,14 @@ source("coastal_vis_functions.R")
 coastal_activities <- coastal_activities %>% 
   mutate(strava_link = str_glue("https://www.strava.com/activities/{strava_id}"),
          strava_data = map(strava_id, ~get_activity(.x, stoken)),
-         ride_start = map_chr(strava_data, "start_date"),
-         ride_start = str_replace_all(ride_start, "T|Z", " ") %>% as.POSIXct(),
-         start_date = as.Date(ride_start),
+         ride_start = map_chr(strava_data, "start_date_local"),
+         ride_start = str_replace_all(ride_start, "T|Z", " ") %>% as.POSIXct(), 
          riders_pretty = str_replace_all(riders, "\\|", ", "),
          marker_popup = str_c(ride_name, "<br>",
                               format(ride_start, "%d-%b-%y"), "<br>",
                               riders_pretty, "<br>",
-                              "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
+                              "<a href=", strava_link, " target=\"_blank\">Strava"),
+         ride_start = format(ride_start, "%Y-%m-%d %H:%M:%S")) %>%      #converting to formatted string so SQLlite treats as a datetime
  select(-strava_data)
 
 # Connect to SQLite DB, retrieve rides already loaded, export backup
