@@ -76,7 +76,6 @@ photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = 
 load_gps_data <- function() {
   
   # Connect to SQLite DB, pull down all ride data, get geocode data
-  con <- dbConnect(RSQLite::SQLite(), "coastal.db") 
   ride_streams <- dbReadTable(con, "ride_streams")
   geocodes <- DBI::dbConnect(RSQLite::SQLite(), "coastal.db") %>% DBI::dbReadTable("geocodes")
   
@@ -84,7 +83,7 @@ load_gps_data <- function() {
   ride_streams <- ride_streams %>% 
     mutate(sort_time = if_else(ride_direction == "cw", -time, time),
            ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
-           ride_start = as.POSIXct(ride_start, origin = lubridate::origin),
+           ride_start = as.POSIXct(ride_start),
            time_of_day = ride_start + seconds(time),
            yr = lubridate::year(ride_start)) %>% 
     arrange(ride_name, sort_time) %>% 
@@ -115,10 +114,10 @@ create_summary <- function() {
   
   df <- full_dataset %>% 
     group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
-    summarise(start_datetime = min(time),
-              finish_datetime = max(time),
-              start_lon = lng[which(time == start_datetime)],
-              start_lat = lat[which(time == start_datetime)],
+    summarise(start_time = min(time),
+              finish_time = max(time),
+              start_lon = lng[which(time == start_time)],
+              start_lat = lat[which(time == start_time)],
               distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
               elevation_metres = sum(climb_since_prev, na.rm = T),
               dist_per_elev = distance_miles / elevation_metres) %>% 
