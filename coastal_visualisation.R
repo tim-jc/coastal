@@ -1,6 +1,7 @@
 # libraries
 library(extrafont)
 library(tidyverse)
+library(DBI)
 library(leaflet)
 library(mapdata)
 library(cowplot)
@@ -24,19 +25,11 @@ source("coastal_vis_functions.R")
 
 # Get data ----------------------------------------------------------------
 
-load_gps_data(file_location = "gps_data/csv_files/")
+full_dataset <- load_gps_data()
 
 rides_index <- create_summary()
 
 uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
-
-# Processing --------------------------------------------------------------
-
-# Write out list of lat / longs that need reverse geocoding
-full_dataset %>% 
-  filter(is.na(postcode)) %>% 
-  select(lon, lat) %>% 
-  write_csv("csv/locations_to_map.csv")
 
 # View route in leaflet ---------------------------------------------------
 
@@ -48,7 +41,7 @@ leaflet() %>%
 
 map_track <- ggplot() + 
   geom_polygon(data = uk_outline_map, aes(x = long, y = lat, group = group), fill = "#192a56") +
-  geom_point(data = full_dataset, aes(x = lon, y = lat),  colour = "#ffffff", size = 0.1, alpha = 0.9) +
+  geom_point(data = full_dataset, aes(x = lng, y = lat),  colour = "#ffffff", size = 0.1, alpha = 0.9) +
   coord_map() +
   scale_colour_gradient2(low = "#2980B9", mid = "#6DD5FA", high = "#ffffff") +
   theme(axis.title = element_blank(),
@@ -122,7 +115,7 @@ background <- ggplot() +
 # Annotations -------------------------------------------------------------
 
 title_string <- "COASTING"
-sub_title_string <- str_glue("{min(rides_index$start_datetime) %>% as_date() %>% format('%B %Y')} to {max(rides_index$start_datetime) %>% as_date() %>% format('%B %Y')}
+sub_title_string <- str_glue("{min(rides_index$ride_start) %>% as_date() %>% format('%B %Y')} to {max(rides_index$ride_start) %>% as_date() %>% format('%B %Y')}
                              {sum(summary_data$total_miles, na.rm = T) %>% as.integer()} miles ridden
                              {sum(summary_data$total_climb, na.rm = T) %>% as.integer()} metres climbed") 
 
