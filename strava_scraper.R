@@ -35,6 +35,17 @@ write_csv(ride_streams,
 # Get stream data for all activities
 coastal_activity_streams <- get_activity_list(stoken) %>% compile_activities() %>% filter(id %in% coastal_activities$strava_id) %>% get_activity_streams(stoken)
 
+# Find new rides to be checked / cropped
+new_rides <- coastal_activities %>% filter(!strava_id %in% ride_streams$strava_id) %>% pull(strava_id)
+
+# Adjust time filters below to define cropping values, then add these to master table in functions script
+leaflet() %>% 
+  addTiles() %>% 
+  add_track(coastal_activity_streams %>%
+              filter(id == new_rides[1],
+                     time >= 0,
+                     time <= 60000))
+
 # Create dataset to load to SQLite DB
 data_to_load <- coastal_activities %>% 
   inner_join(coastal_activity_streams, by = c("strava_id" = "id")) %>% 
