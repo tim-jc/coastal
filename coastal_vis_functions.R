@@ -37,7 +37,8 @@ coastal_activities <- tribble(
   5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51318,
   5564763338, "looe", "exmouth", "acw", "TC|SB|DA", 0, 44658,
   5575822827, "exmouth", "bournemouth", "acw", "TC|SB|DA", 0, 45082,
-  # Bournmouth -> Bognor
+  # Bournemouth -> Bognor
+  7403080498, "cowes", "cowes", "acw", "TC|SB",  0, 18211,
   1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
   1250104735, "rochester", "folkestone", "cw", "TC|SB", 10425, 40297,
   5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
@@ -53,6 +54,8 @@ coastal_activities <- tribble(
   4049860168, "boston", "hull", "acw", "TC|SB|DA", 205, 33323,
   4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
   4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 24371
+  # Inverness -> Newcastle
+  # NC500
 ) %>% 
   mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"))
 
