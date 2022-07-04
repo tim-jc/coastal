@@ -61,6 +61,24 @@ valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", colo
 
 ```{r}
 valueBox("14", icon = "fa-ship", color = "grey25")
+
+# List of ferries, to keep track!
+
+# 1 Tilbury -> Gravesend
+# 2 Poole Harbour
+# 3 Dartmouth -> Kingswear
+# 4 Salcombe
+# 5 Torpoint -> Plymouth
+# 6 Fowey -> Polruan
+# 7 Falmouth -> St Mawes
+# 8 Padstow
+# 9 Ardrossan -> Brodick
+# 10 Lochranza -> Claonaig
+# 11 Oban -> Craignure
+# 12 Tobermory -> Kilchoan
+# 13 Mallaig -> Armadale
+# 14 East Cowes -> West Cowes
+
 ```
 
 Row 
