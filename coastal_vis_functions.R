@@ -40,7 +40,8 @@ coastal_activities <- tribble(
   # Bournemouth -> Bognor
   7403080498, "cowes", "cowes", "acw", "TC|SB",  0, 18211,
   1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
-  1250104735, "rochester", "folkestone", "cw", "TC|SB", 10425, 40297,
+  1250104735, "rochester", "folkestone", "cw", "TC|SB", 10425, 40297, # new ride start time once Graveney becomes the start
+  # Rochester -> Graveney
   5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
   177822252, "maldon", "battlesbridge", "cw", "TC", 13000, 25175,
   31856491, "maldon", "clacton", "acw", "TC", 12280, 23817,
