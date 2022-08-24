@@ -52,9 +52,11 @@ for (j in 1:nrow(to_code)) {
   out <- tibble(lng, lat, location_string) %>% 
     mutate(has_postcode = str_detect(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"))
   
-  if(out$has_postcode) {
-    out <- out %>% select(-has_postcode)
-    dbWriteTable(con, "geocodes", out, append = T)
+  if(nrow(out) > 0) { 
+    if(out$has_postcode) {
+      out <- out %>% select(-has_postcode)
+      dbWriteTable(con, "geocodes", out, append = T)
+    }
   }
   
   if(j > 200) {
@@ -62,3 +64,13 @@ for (j in 1:nrow(to_code)) {
   }
   
 }
+
+# Section below for manual coding - paste lat / lng into Google Maps to find address details & postcode
+# to_code %>%
+#   select(lat, lng) %>%
+#   arrange(lng) %>%
+#   mutate(location_string = NA_character_) %>%
+#   write_csv("to_code.csv")
+
+# manually_coded <- read_csv("to_code.csv") %>% filter(!is.na(location_string)) %>% select(lng, lat, location_string)
+# dbWriteTable(con, "geocodes", manually_coded, append = T)
