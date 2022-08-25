@@ -15,3 +15,10 @@
 6 - export as PDF using A2 custom size with 4mm unprintable space on each edge
 
 7 - run index.Rmd to update flexdashboard
+
+
+# Note on Git authentication
+
+If the access token expires you can refresh from the links in GitHub's notification email.
+
+To reauthenticate, git push from the local repo using Terminal. This will prompt for a username and password. Enter the new authentication token in the password box
