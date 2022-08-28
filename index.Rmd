@@ -135,8 +135,8 @@ Row
 draw_xp_plot()
 ```
 
-### Activity by time of day
+### Miles ridden by hour of day
 
 ```{r}
-draw_time_plot()
+draw_miles_by_hour_plot()
 ```
