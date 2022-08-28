@@ -245,26 +245,28 @@ draw_xp_plot <- function() {
   
 }
 
-draw_time_plot <- function() {
+draw_miles_by_hour_plot <- function() {
   
-  time_plot <- full_dataset %>% 
-    mutate(gpx_point_time = update(time_of_day, day = 1, month = 1, year = 2020)) %>% 
-    ggplot(aes(x = gpx_point_time)) +
-    geom_freqpoly(binwidth = 300, colour = phiets_red) + 
-    scale_x_datetime(labels = function(x) format(x, "%H:%M"), breaks = "2 hour") +
-    labs(x = "",
-         y = "") +
+  mbh_plot <- full_dataset %>% 
+    mutate(hour_of_day = hour(time_of_day),
+           hour_text = if_else(hour_of_day < 10, str_c("0",hour_of_day), as.character(hour_of_day))) %>% 
+    group_by(hour_of_day, hour_text) %>% 
+    summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * 0.0006213) %>% 
+    mutate(text_label = str_glue("From: {hour_text}00 to {hour_text}59
+                                 Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}")) %>% 
+    ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
+    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.2) +
+    scale_x_continuous(breaks = seq(1,24,1)) +
+    labs(x = "\nHour of day",
+         y = "Distance ridden /miles\n") +
     theme_minimal() +
-    theme(axis.text.x = element_text(colour = phiets_navy),
-          axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          panel.grid = element_blank())
+    theme(axis.text = element_text(colour = phiets_navy),
+          axis.title = element_text(colour = phiets_navy),
+          panel.grid = element_blank()) 
   
-  time_plot <- ggplotly(time_plot)
+  mbh_plot <- ggplotly(mbh_plot, tooltip = "text")
   
-  time_plot <- style(time_plot, hoverinfo = "none")
-  
-  return(time_plot)
+  return(mbh_plot)
   
 }
 
