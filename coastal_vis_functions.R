@@ -26,7 +26,9 @@ coastal_activities <- tribble(
   7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 0, 33371,
   7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 33382,
   7055062883, "ardrossan", "whiting bay", "cw", "TC|SB|WR", 7920, 16788,
-  # Carlisle -> Glasgow adventure here
+  # strava_id, "ayr", "glasgow", "cw", "TC|SB|WR|ML", start_time, end_time
+  # strava_id, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", start_time, end_time
+  # strava_id, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", start_time, end_time
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 0, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43692,
@@ -40,8 +42,8 @@ coastal_activities <- tribble(
   # Bournemouth -> Bognor
   7403080498, "cowes", "cowes", "acw", "TC|SB",  0, 18211,
   1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
-  1250104735, "rochester", "folkestone", "cw", "TC|SB", 10425, 40297, # new ride start time once Graveney becomes the start
-  # Rochester -> Graveney
+  1250104735, "culmers", "folkestone", "cw", "TC|SB", 16545, 40297,
+  7709542211, "rochester", "culmers", "cw", "TC", 7920, 27166,
   5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
   177822252, "maldon", "battlesbridge", "cw", "TC", 13000, 25175,
   31856491, "maldon", "clacton", "acw", "TC", 12280, 23817,
