@@ -26,9 +26,9 @@ coastal_activities <- tribble(
   7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 0, 33371,
   7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 33382,
   7055062883, "ardrossan", "whiting bay", "cw", "TC|SB|WR", 7920, 16788,
-  # strava_id, "ayr", "glasgow", "cw", "TC|SB|WR|ML", start_time, end_time
-  # strava_id, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", start_time, end_time
-  # strava_id, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", start_time, end_time
+  # 7753830579, "ayr", "glasgow", "cw", "TC|SB|WR|ML", 0, 60000
+  # 7749140338, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", 0, 60000
+  # 7742970954, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", 0, 60000
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 0, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43692,
@@ -150,7 +150,10 @@ draw_map <- function(map_type) {
              attribution = paste(
                '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
                '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-             ))
+             )) %>% 
+    addControlGPS(options = gpsOptions(position = "topleft", activate = TRUE, 
+                                       autoCenter = TRUE, maxZoom = 60, 
+                                       setView = TRUE)) 
   
   if(map_type == "all") {
     
