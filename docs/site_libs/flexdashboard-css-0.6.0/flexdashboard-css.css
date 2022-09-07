@@ -3,13 +3,13 @@
  (https://github.com/keen/dashboards)
 */
 body {
-  background: whitesmoke;
+  background: #f4f4f4;
   padding: 60px 0 0 8px;
   /* padding-top overridden by output template */
 }
 
 body hr {
-  border-color: #e0e0e0;
+  border-color: #dcdddd;
   margin: 10px 0;
 }
 
@@ -71,7 +71,7 @@ body hr {
 .chart-wrapper .chart-notes {
   background: #fcfcfc;
   border-top: 1px solid #dee2e6;
-  color: #9b9d9e;
+  color: #909294;
   font-size: 0.825rem;
   padding: 8px 10px 5px;
 }
@@ -312,24 +312,24 @@ body hr {
 .storyboard-nav .sbnext,
 .storyboard-nav .sbprev {
   font-size: 3.28125rem;
-  color: #373a3c;
+  color: #212529;
 }
 
 .storyboard-nav .sbframelist ul li {
   background: #fff;
   border: 1px solid #dee2e6;
   border-radius: 0.25rem;
-  color: #696b6d;
+  color: #595c5f;
   font-size: 0.9375rem;
 }
 
 .storyboard-nav .sbframelist ul li.active {
   color: #fff;
-  background-color: rgba(39, 128, 227, 0.7);
+  background-color: rgba(44, 62, 80, 0.7);
 }
 
 .sbframe-commentary {
-  background: #fcfcfc;
+  background: #fbfcfc;
   font-size: 0.9375rem;
 }
 
@@ -337,7 +337,7 @@ body hr {
 .nav-tabs-custom > .nav-tabs {
   margin: 0;
   border-bottom: 1px solid #dee2e6;
-  color: rgba(95, 97, 99, 0.6);
+  color: rgba(77, 81, 84, 0.6);
   font-size: 0.9375rem;
   font-weight: 300;
   border-top-right-radius: 3px;
@@ -352,7 +352,7 @@ body hr {
 
 .nav-tabs-custom > .nav-tabs > li > a,
 .nav-tabs-custom > .nav-tabs > li > a:active {
-  color: #5f6163;
+  color: #4d5154;
   font-weight: 300;
   font-size: 0.9375rem;
   border-radius: 0;
@@ -365,7 +365,7 @@ body hr {
 }
 
 .nav-tabs-custom > .nav-tabs > li > a.text-muted {
-  color: rgba(95, 97, 99, 0.6);
+  color: rgba(77, 81, 84, 0.6);
 }
 
 .nav-tabs-custom > .nav-tabs > li > a,
@@ -375,7 +375,7 @@ body hr {
 }
 
 .nav-tabs-custom > .nav-tabs > li > a:hover {
-  color: rgba(95, 97, 99, 0.6);
+  color: rgba(77, 81, 84, 0.6);
 }
 
 .nav-tabs-custom > .nav-tabs > li:not(.active) > a:hover,
@@ -385,19 +385,19 @@ body hr {
 }
 
 .nav-tabs-custom > .nav-tabs > li.active {
-  border-top-color: #2780e3;
+  border-top-color: #2c3e50;
 }
 
 .nav-tabs-custom > .nav-tabs > li.active > a,
 .nav-tabs-custom > .nav-tabs > li.active:hover > a {
   background-color: #fff;
-  color: #5f6163;
+  color: #4d5154;
 }
 
 .nav-tabs-custom > .nav-tabs > li.active > a {
   border-top-color: transparent;
-  border-left-color: #e0e0e0;
-  border-right-color: #e0e0e0;
+  border-left-color: #dcdddd;
+  border-right-color: #dcdddd;
 }
 
 .nav-tabs-custom > .nav-tabs > li:first-of-type {
@@ -425,7 +425,7 @@ body hr {
 }
 
 .nav-tabs-custom > .nav-tabs.pull-right > li.active:first-of-type > a {
-  border-left-color: #e0e0e0;
+  border-left-color: #dcdddd;
   border-right-color: transparent;
 }
 
@@ -433,7 +433,7 @@ body hr {
   line-height: 35px;
   padding: 0 10px;
   font-size: 1.40625rem;
-  color: #5f6163;
+  color: #4d5154;
 }
 
 .nav-tabs-custom > .nav-tabs > li.header > .fa,
@@ -469,7 +469,7 @@ body hr {
 .nav-tabs-custom .dropdown.open > a:active,
 .nav-tabs-custom .dropdown.open > a:focus {
   background: transparent;
-  color: #5f6163;
+  color: #4d5154;
 }
 
 @media (max-width: 767px) {
@@ -490,7 +490,7 @@ body hr {
   left: 0;
   bottom: 0;
   border-right: 1px solid #dee2e6;
-  background-color: rgba(39, 128, 227, 0.1);
+  background-color: rgba(44, 62, 80, 0.1);
   padding-top: 10px;
   padding-left: 10px;
   padding-right: 10px;
@@ -519,7 +519,7 @@ body hr {
 }
 
 .featherlight:last-of-type {
-  background: rgba(55, 58, 60, 0.7);
+  background: rgba(33, 37, 41, 0.7);
 }
 
 .featherlight-inner {
