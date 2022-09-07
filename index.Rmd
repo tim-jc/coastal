@@ -17,9 +17,9 @@ library(flexdashboard)
 library(tidyverse)
 library(plotly)
 library(leaflet)
+library(leaflet.extras)
 library(DBI)
 library(lubridate)
-library(rStrava)
 
 # clear the memory
 rm(list=ls(all = TRUE))
@@ -42,25 +42,25 @@ Row
 ### Miles ridden
 
 ```{r}
-valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "grey25")
+valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#bfbfbf")
 ```
 
 ### Metres climbed
 
 ```{r}
-valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "grey25")
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#bfbfbf")
 ```
 
 ### Days ridden
 
 ```{r}
-valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", color = "grey25")
+valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", color = "#bfbfbf")
 ```
 
 ### Ferries taken
 
 ```{r}
-valueBox("14", icon = "fa-ship", color = "grey25")
+valueBox("14", icon = "fa-ship", color = "#bfbfbf")
 
 # List of ferries, to keep track!
 
