@@ -1,21 +1,9 @@
 # coastal vis functions / values
 
-# Establish Strava connection ---------------------------------------------
-
-app_name <- 'coastal_datavis' # chosen by user
-app_client_id  <- '53709' # an integer, assigned by Strava
-app_secret <- '4f5778009ce59f130203ef927694029d518ea3ff' # an alphanumeric secret, assigned by Strava
-
-# create the authentication token - only do this once to cache the token in the working directory
-# stoken <- httr::config(token = strava_oauth(app_name, app_client_id, app_secret, app_scope="activity:read_all", cache = T))
-
-# once token created / cached in working directoty, use the below to load it
-stoken <- httr::config(token = readRDS('.httr-oauth')[[1]])
-
 # Define values -----------------------------------------------------------
 
 # SQLite DB connection
-con <- dbConnect(RSQLite::SQLite(), "coastal.db")
+con <- dbConnect(RSQLite::SQLite(), "~/Documents/Coding/R/Strava/strava_data.db")
 
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
@@ -26,9 +14,9 @@ coastal_activities <- tribble(
   7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 0, 33371,
   7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 33382,
   7055062883, "ardrossan", "whiting bay", "cw", "TC|SB|WR", 7920, 16788,
-  # 7753830579, "ayr", "glasgow", "cw", "TC|SB|WR|ML", 0, 60000
-  # 7749140338, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", 0, 60000
-  # 7742970954, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", 0, 60000
+  7753830579, "ayr", "glasgow", "cw", "TC|SB|WR|ML", 0, 24570,
+  7749140338, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", 120, 36170,
+  7742970954, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", 476, 30851,
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 0, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43692,
@@ -60,7 +48,10 @@ coastal_activities <- tribble(
   # Inverness -> Newcastle
   # NC500
 ) %>% 
-  mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"))
+  mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"), 
+         riders_pretty = str_replace_all(riders, "\\|", ", "))
+
+coastal_ids <- coastal_activities$strava_id
 
 xp_unit <- 15
 
@@ -79,29 +70,50 @@ photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = 
 
 # Functions ---------------------------------------------------------------
 
+get_coastal_rides <- function() {
+  
+  ride_streams <- tbl(con, "ride_streams") %>% filter(id %in% coastal_ids) %>% collect()
+  
+  ride_streams <- ride_streams %>% 
+    inner_join(coastal_activities, by = c("id" = "strava_id")) %>% 
+    filter(time >= ride_start_time,
+           time <= ride_end_time) 
+  
+  return(ride_streams)
+  
+}
+
+# This function needs work to run off new method, but all others should be fine if working properly
 load_gps_data <- function() {
   
-  # Connect to SQLite DB, pull down all ride data, get geocode data
-  ride_streams <- dbReadTable(con, "ride_streams")
-  geocodes <- DBI::dbConnect(RSQLite::SQLite(), "coastal.db") %>% DBI::dbReadTable("geocodes")
+  # Connect to SQLite DB, pull down geocode data and activity list
+  # data from the activity list table for coastal rides to go here
+  geocodes <- tbl(con, "geocodes") %>% collect()
+  
+  activity_list <- tbl(con, "activity_list") %>% select(id, ride_start, strava_link) %>% filter(id %in% coastal_ids) %>% collect()
   
   # Arrange dataframe
-  ride_streams <- ride_streams %>% 
+  ride_streams <- get_coastal_rides() %>%  
+    inner_join(activity_list, by = "id") %>%
     mutate(sort_time = if_else(ride_direction == "cw", -time, time),
            ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
            ride_start = as.POSIXct(ride_start),
            time_of_day = ride_start + seconds(time),
-           yr = lubridate::year(ride_start)) %>% 
+           yr = lubridate::year(ride_start),
+           marker_popup = str_c(ride_name, "<br>",
+                                format(ride_start, "%d-%b-%y"), "<br>",
+                                riders_pretty, "<br>",
+                                "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
     arrange(ride_name, sort_time) %>% 
     left_join(geocodes, by = c("lng", "lat")) %>% 
     mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
            town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
     ) %>% 
     left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
-    mutate(id = seq(1,nrow(.),1))
+    mutate(point_id = seq(1,nrow(.),1))
   
   ride_streams <- ride_streams %>% 
-    group_by(strava_id) %>% 
+    group_by(id) %>% 
     mutate(prev_lng = lag(lng),
            prev_lat = lag(lat),
            prev_alt = lag(altitude),
@@ -119,7 +131,7 @@ load_gps_data <- function() {
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
+    group_by(ride_name, ride_start, yr, riders, id, strava_link, ride_direction, marker_popup) %>% 
     summarise(start_time = min(time),
               finish_time = max(time),
               start_lon = lng[which(time == start_time)],
@@ -127,6 +139,7 @@ create_summary <- function() {
               distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
               elevation_metres = sum(climb_since_prev, na.rm = T),
               dist_per_elev = distance_miles / elevation_metres) %>% 
+    distinct() %>% 
     ungroup() %>% 
     arrange(ride_start) %>% 
     mutate(start_date = as.Date(ride_start),
@@ -312,5 +325,5 @@ get_coord_valuebox <- function(pos_needed) {
   
   link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lng>0,str_c(df$lng,\"E\"),str_c(0 - df$lng,\"W\"))}")
   
-  valueBox(df$town, icon = icon_str, color = "grey25", href = link_str)
+  valueBox(df$town, icon = icon_str, color = "#bfbfbf", href = link_str)
 }
