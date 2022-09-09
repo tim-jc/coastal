@@ -54,8 +54,8 @@ map_track <- ggplot() +
 summary_data <- rides_index %>% 
   mutate(yr = as.character(yr)) %>% 
   group_by(yr) %>% 
-  summarise(total_miles = sum(distance_miles) %>% as.integer(),
-            total_climb = sum(elevation_metres) %>% as.integer()) %>% 
+  summarise(total_miles = sum(distance_miles),
+            total_climb = sum(elevation_metres)) %>% 
   bind_rows(data.frame(yr = "",
                        total_miles = NA_real_,
                        total_climb = NA_real_))
