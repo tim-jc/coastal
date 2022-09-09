@@ -6,7 +6,7 @@ output:
     vertical_layout: fill
     theme: 
       version: 4
-      navbar-bg: "#0C2340"
+      bootswatch: flatly
     navbar: 
     - { icon: "fa-circle", href: "http://phiets.cc", align: right}
     - { icon: "fa-circle", href: "http://phiets.cc", align: right}
@@ -42,25 +42,25 @@ Row
 ### Miles ridden
 
 ```{r}
-valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#bfbfbf")
+valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#EDF0F1")
 ```
 
 ### Metres climbed
 
 ```{r}
-valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#bfbfbf")
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#EDF0F1")
 ```
 
 ### Days ridden
 
 ```{r}
-valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", color = "#bfbfbf")
+valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", color = "#EDF0F1")
 ```
 
 ### Ferries taken
 
 ```{r}
-valueBox("14", icon = "fa-ship", color = "#bfbfbf")
+valueBox("14", icon = "fa-ship", color = "#EDF0F1")
 
 # List of ferries, to keep track!
 
