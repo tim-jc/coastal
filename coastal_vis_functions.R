@@ -3,7 +3,7 @@
 # Define values -----------------------------------------------------------
 
 # SQLite DB connection
-con <- dbConnect(RSQLite::SQLite(), "~/Documents/Coding/R/Strava/strava_data.db")
+con <- DBI::dbConnect(RSQLite::SQLite(), "~/Documents/Coding/R/Strava/strava_data.db")
 
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
@@ -325,5 +325,5 @@ get_coord_valuebox <- function(pos_needed) {
   
   link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lng>0,str_c(df$lng,\"E\"),str_c(0 - df$lng,\"W\"))}")
   
-  valueBox(df$town, icon = icon_str, color = "#bfbfbf", href = link_str)
+  valueBox(df$town, icon = icon_str, color = "#EDF0F1", href = link_str)
 }
