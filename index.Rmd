@@ -31,6 +31,10 @@ full_dataset <- load_gps_data()
 rides_index <- create_summary()
 
 image_metadata <- get_image_metadata()
+
+# Export individual rider maps as .png files
+walk(riders, export_rider_maps)
+
 ```
 
 Maps
@@ -139,4 +143,19 @@ draw_xp_plot()
 
 ```{r}
 draw_miles_by_hour_plot()
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Distance / climb by year
+
+```{r}
+draw_miles_climb_plot()
+```
+
+### Distance / climb by year
+
+```{r}
+draw_miles_climb_plot()
 ```
