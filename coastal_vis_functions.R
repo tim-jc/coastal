@@ -11,17 +11,17 @@ coastal_activities <- tribble(
   7081454837, "harrapool", "strathcarron", "cw", "TC|SB|WR", 0, 10442,
   7076591578, "acharacle", "harrapool", "cw", "TC|SB|WR", 0, 26453,
   7072272567, "oban", "acharacle", "cw", "TC|SB|WR", 0, 34095,
-  7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 0, 33371,
-  7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 33382,
+  7066002617, "tarbert", "oban", "cw", "TC|SB|WR", 244, 33371,
+  7060605792, "whiting bay", "tarbert", "cw", "TC|SB|WR", 0, 32870,
   7055062883, "ardrossan", "whiting bay", "cw", "TC|SB|WR", 7920, 16788,
   7753830579, "ayr", "glasgow", "cw", "TC|SB|WR|ML", 0, 24570,
   7749140338, "newton stewart", "ayr", "cw", "TC|SB|WR|ML", 120, 36170,
   7742970954, "carlisle", "newton stewart", "cw", "TC|SB|WR|ML", 476, 30851,
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
-  6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 0, 42273,
-  6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43692,
+  6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
+  6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
   # Wales adventure here
-  5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27310,
+  5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27308,
   5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
   5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
   5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51318,
@@ -34,17 +34,14 @@ coastal_activities <- tribble(
   7709542211, "rochester", "culmers", "cw", "TC", 7920, 27166,
   5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
   177822252, "maldon", "battlesbridge", "cw", "TC", 13000, 25175,
-  31856491, "maldon", "clacton", "acw", "TC", 12280, 23817,
-  33329545, "clacton", "manningtree", "acw", "TC", 4700, 18254,
-  754726575, "woodbridge", "manningtree", "cw", "TC|AH",  0, 11150,
-  1323036676, "orford", "woodbridge", "acw", "TC", 0, 10000,
-  428214670, "snape", "orford", "cw", "TC", 2350, 4000,
+  415714188, "maldon", "peldon", "acw", "TC", 11370, 17545,
+  # Mega Ferry here
   233045883, "southwold", "snape", "cw", "TC|SB", 7175, 20430,
   753905298, "hunstanton", "southwold", "cw", "TC|AH" , 0, 35020,
   870993393, "boston", "hunstanton", "cw", "TC", 16250, 28975,
   4049860168, "boston", "hull", "acw", "TC|SB|DA", 205, 33323,
   4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
-  4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 24371
+  4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 21970
   # Inverness -> Newcastle
   # NC500
 ) %>% 
@@ -61,6 +58,8 @@ xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 
                     ) %>% 
   mutate(xp_level = seq_along(xp),
          next_xp = lead(xp))
+
+riders <- coastal_activities %>% mutate(riders = str_split(riders,"\\|")) %>% unnest(riders) %>% pull(riders) %>% unique()
 
 phiets_navy <- "#0C2340"
 phiets_red <- "#D50032"
@@ -83,7 +82,6 @@ get_coastal_rides <- function() {
   
 }
 
-# This function needs work to run off new method, but all others should be fine if working properly
 load_gps_data <- function() {
   
   # Connect to SQLite DB, pull down geocode data and activity list
@@ -286,6 +284,37 @@ draw_miles_by_hour_plot <- function() {
   
 }
 
+draw_miles_climb_plot <- function() {
+  
+  dist_climb_yr <- rides_index %>% 
+    group_by(yr) %>% 
+    summarise(tot_miles = sum(distance_miles) %>% round(0),
+              tot_elev = sum(elevation_metres) %>% round(0)) %>% 
+    mutate(yr = as.character(yr),
+           adjusted_elev = -tot_elev/10) %>% 
+    pivot_longer(-c(yr, tot_elev))
+  
+  mc_plot <- dist_climb_yr %>% 
+    ggplot(aes(x = yr, y = value, colour = name)) +
+    geom_segment(aes(xend = yr, yend = 0)) +
+    geom_text(y = 0, aes(label = yr), colour = phiets_navy, nudge_x = 0.25) +
+    geom_text(data = dist_climb_yr %>% filter(name == "adjusted_elev"), aes(label = str_c(tot_elev, "m")), nudge_y = -150) +
+    geom_text(data = dist_climb_yr %>% filter(name == "tot_miles"), aes(label = str_c(value, "mi")), nudge_y = 150) +
+    geom_point(size = 3) +
+    coord_flip() +
+    scale_colour_manual(values = c(phiets_navy,phiets_red)) +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          legend.position = "none")
+  
+  mc_plot <- ggplotly(mc_plot, tooltip = "text")
+  
+  return(mc_plot)
+  
+}
+
 get_image_metadata <- function() {
   
   exifr::read_exif("docs/images",
@@ -326,4 +355,30 @@ get_coord_valuebox <- function(pos_needed) {
   link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lng>0,str_c(df$lng,\"E\"),str_c(0 - df$lng,\"W\"))}")
   
   valueBox(df$town, icon = icon_str, color = "#EDF0F1", href = link_str)
+}
+
+export_rider_maps <- function(rider) {
+  
+  uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
+  
+  rider_dataset <- full_dataset %>% 
+    filter(str_detect(riders, rider)) %>% 
+    select(id, lat, lng) %>% 
+    mutate(lat = round(lat, 2),
+           lng = round(lng, 2)) %>% 
+    distinct()
+  
+  ggplot() + 
+    geom_polygon(data = uk_outline_map, aes(x = long, y = lat, group = group), fill = "#D3D3D3") +
+    geom_point(data = rider_dataset, aes(x = lng, y = lat),  colour = phiets_navy, size = 0.005, alpha = 0.9) +
+    coord_map(xlim = c(-8,1.5), ylim = c(50, 59)) +
+    theme(axis.title = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill = "#FFFFFF"),
+          plot.background = element_rect(fill = "#FFFFFF", colour = NA))
+  
+  ggsave(str_c("docs/",rider,".png"), device = "png", width = 1000, height = 1500, units = "px")
+  
 }
