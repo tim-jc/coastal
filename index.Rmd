@@ -13,13 +13,8 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(flexdashboard)
-library(tidyverse)
-library(plotly)
-library(leaflet)
-library(leaflet.extras)
-library(DBI)
-library(lubridate)
+libs <- c("flexdashboard","tidyverse","plotly","leaflet","leaflet.extras","DBI","lubridate","mapdata")
+purrr::walk(libs, ~library(.,character.only = T))
 
 # clear the memory
 rm(list=ls(all = TRUE))
@@ -147,12 +142,6 @@ draw_miles_by_hour_plot()
 
 Row
 -----------------------------------------------------------------------
-
-### Distance / climb by year
-
-```{r}
-draw_miles_climb_plot()
-```
 
 ### Distance / climb by year
 
