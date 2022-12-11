@@ -67,6 +67,9 @@ phiets_red <- "#D50032"
 section_start_icon <- makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "white", iconColor = phiets_navy)
 photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "white", iconColor = phiets_red)
 
+#github docs folder file path
+docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/docs/"
+
 # Functions ---------------------------------------------------------------
 
 get_coastal_rides <- function() {
@@ -229,10 +232,12 @@ draw_xp_plot <- function() {
            percent_level_complete = (total_xp - xp) / xp_window,
            text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)"),
            rider = factor(rider),
-           rider = fct_reorder(rider, total_xp))
+           rider = fct_reorder(rider, total_xp),
+           img_path = str_c(docs_folder_path,rider,".png"), # path to hover image of each riders trace
+           img_path_b64 = map_chr(img_path, ~base64enc::dataURI(file = .x))) # image path needs to be base64 encoded
   
   xp_plot <- rider_xp %>% 
-    ggplot(aes(x = rider, y = percent_level_complete, text = text_label)) +
+    ggplot(aes(x = rider, y = percent_level_complete, text = text_label, customdata = img_path_b64)) +
     # Background bar
     geom_segment(aes(x = rider, y = 0, xend = rider, yend = 1), size = 4, colour = "grey85") +
     geom_point(aes(x = rider, y = 1), size = 3.5, colour = "grey85") +
@@ -254,6 +259,41 @@ draw_xp_plot <- function() {
          y = "")
   
   xp_plot <- ggplotly(xp_plot, tooltip = "text")
+  
+  xp_plot <- xp_plot %>% htmlwidgets::onRender("
+    function(el, x) {
+      // when hovering over an element, do something
+      el.on('plotly_hover', function(d) {
+            // extract image location
+        image_location = d.points[0].customdata;
+
+        // define image to be shown
+        var img = {
+          // location of image
+          source: image_location,
+          // position of image overlap on plot
+          x: 0.8,
+          y: 0.5,
+          sizex: 0.5,
+          sizey: 0.5,
+          xref: 'paper',
+          yref: 'paper',
+          border: '5px solid #555'
+        };
+
+        // show image 
+        Plotly.relayout(el.id, {
+            images: [img] 
+        });
+      })
+          // remove image when unhovering
+      .on('plotly_unhover', function(d){
+            // show image and annotation 
+        Plotly.relayout(el.id, {
+            images: null
+        });
+          })
+        }")
   
   return(xp_plot)
   
@@ -321,7 +361,7 @@ get_image_metadata <- function() {
             args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
             recursive = T) %>% 
     mutate(image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
-           image_source = str_c("https://raw.githubusercontent.com/tim-jc/coastal/master/docs/images/",FileName),
+           image_source = str_c(docs_folder_path,"images/",FileName),
            image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
            marker_popup = str_c("<a href=\"", image_source, "\" target=\"_blank\">",
                            "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
