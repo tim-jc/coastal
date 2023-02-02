@@ -74,7 +74,7 @@ docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/doc
 
 get_coastal_rides <- function() {
   
-  ride_streams <- tbl(con, "ride_streams") %>% filter(id %in% coastal_ids) %>% collect()
+  ride_streams <- tbl(con, "streams") %>% filter(id %in% coastal_ids) %>% collect()
   
   ride_streams <- ride_streams %>% 
     inner_join(coastal_activities, by = c("id" = "strava_id")) %>% 
@@ -91,7 +91,7 @@ load_gps_data <- function() {
   # data from the activity list table for coastal rides to go here
   geocodes <- tbl(con, "geocodes") %>% collect()
   
-  activity_list <- tbl(con, "activity_list") %>% select(id, ride_start, strava_link) %>% filter(id %in% coastal_ids) %>% collect()
+  activity_list <- tbl(con, "activities") %>% select(id, ride_start, strava_link) %>% filter(id %in% coastal_ids) %>% collect()
   
   # Arrange dataframe
   ride_streams <- get_coastal_rides() %>%  
@@ -187,7 +187,7 @@ draw_map <- function(map_type) {
   
   for(i in ride_names) {
     
-    map <- map %>% add_track(full_dataset %>% filter(ride_name == i))
+    map <- map %>% add_track(position_tbl = full_dataset %>% filter(ride_name == i), track_colour = phiets_navy)
     
   }
   
@@ -199,16 +199,6 @@ draw_map <- function(map_type) {
   
   return(map)
   
-}
-
-add_track <- function(leaflet_obj, gpx_df, track_colour = phiets_navy) {
-  
-  latitude <- gpx_df$lat
-  longitude <- gpx_df$lng
-  
-  leaflet_obj %>% 
-    addPolylines(lat = latitude, lng = longitude, opacity = 0.5, weight = 2, color = track_colour)
-
 }
 
 draw_xp_plot <- function() {
