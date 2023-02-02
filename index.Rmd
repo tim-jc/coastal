@@ -13,7 +13,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-libs <- c("flexdashboard","tidyverse","plotly","leaflet","leaflet.extras","DBI","lubridate","mapdata")
+libs <- c("flexdashboard","tidyverse","plotly","leaflet","leaflet.extras","DBI","lubridate","mapdata","stravR")
 purrr::walk(libs, ~library(.,character.only = T))
 
 # clear the memory
