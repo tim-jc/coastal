@@ -36,3 +36,5 @@ coastal.Rproj
 *.DS_Store
 # databases
 *.db
+# Other
+config.R
