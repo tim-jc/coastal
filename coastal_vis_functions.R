@@ -2,9 +2,6 @@
 
 # Define values -----------------------------------------------------------
 
-# SQLite DB connection
-con <- DBI::dbConnect(RSQLite::SQLite(), "~/Documents/Coding/R/Strava/strava_data.db")
-
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
@@ -20,7 +17,8 @@ coastal_activities <- tribble(
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
-  # Wales adventure here
+  # Wales north
+  # <id>, "bristol", "", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
   5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27308,
   5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
   5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
@@ -74,10 +72,10 @@ docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/doc
 
 get_coastal_rides <- function() {
   
-  ride_streams <- tbl(con, "streams") %>% filter(id %in% coastal_ids) %>% collect()
+  ride_streams <- tbl(con, "streams") %>% filter(strava_id %in% coastal_ids) %>% collect()
   
   ride_streams <- ride_streams %>% 
-    inner_join(coastal_activities, by = c("id" = "strava_id")) %>% 
+    inner_join(coastal_activities, by = "strava_id") %>% 
     filter(time >= ride_start_time,
            time <= ride_end_time) 
   
@@ -91,11 +89,11 @@ load_gps_data <- function() {
   # data from the activity list table for coastal rides to go here
   geocodes <- tbl(con, "geocodes") %>% collect()
   
-  activity_list <- tbl(con, "activities") %>% select(id, ride_start, strava_link) %>% filter(id %in% coastal_ids) %>% collect()
+  activity_list <- tbl(con, "activities") %>% select(strava_id, ride_start, strava_link) %>% filter(strava_id %in% coastal_ids) %>% collect()
   
   # Arrange dataframe
   ride_streams <- get_coastal_rides() %>%  
-    inner_join(activity_list, by = "id") %>%
+    inner_join(activity_list, by = "strava_id") %>%
     mutate(sort_time = if_else(ride_direction == "cw", -time, time),
            ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
            ride_start = as.POSIXct(ride_start),
@@ -114,7 +112,7 @@ load_gps_data <- function() {
     mutate(point_id = seq(1,nrow(.),1))
   
   ride_streams <- ride_streams %>% 
-    group_by(id) %>% 
+    group_by(strava_id) %>% 
     mutate(prev_lng = lag(lng),
            prev_lat = lag(lat),
            prev_alt = lag(altitude),
@@ -132,7 +130,7 @@ load_gps_data <- function() {
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(ride_name, ride_start, yr, riders, id, strava_link, ride_direction, marker_popup) %>% 
+    group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
     summarise(start_time = min(time),
               finish_time = max(time),
               start_lon = lng[which(time == start_time)],
@@ -393,7 +391,7 @@ export_rider_maps <- function(rider) {
   
   rider_dataset <- full_dataset %>% 
     filter(str_detect(riders, rider)) %>% 
-    select(id, lat, lng) %>% 
+    select(strava_id, lat, lng) %>% 
     mutate(lat = round(lat, 2),
            lng = round(lng, 2)) %>% 
     distinct()
