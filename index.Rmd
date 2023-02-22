@@ -19,6 +19,7 @@ purrr::walk(libs, ~library(.,character.only = T))
 # clear the memory
 rm(list=ls(all = TRUE))
 
+source("config.R")
 source("coastal_vis_functions.R")
 
 full_dataset <- load_gps_data()
