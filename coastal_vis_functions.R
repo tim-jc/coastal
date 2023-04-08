@@ -18,14 +18,18 @@ coastal_activities <- tribble(
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
   # Wales north
-  # <id>, "bristol", "", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
+  # <id>, "bristol", "swansea", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
+  # <id>, "swansea", "tenby", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
+  # <id>, "tenby", "newport", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
+  # <id>, "newport", "mathafarn", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
   5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27308,
   5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
   5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
   5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51318,
   5564763338, "looe", "exmouth", "acw", "TC|SB|DA", 0, 44658,
-  5575822827, "exmouth", "bournemouth", "acw", "TC|SB|DA", 0, 45082,
-  # Bournemouth -> Bognor
+  5575822827, "exmouth", "bournemouth", "acw", "TC|SB|DA", 0, 45040,
+  8848979854, "havant", "bournemouth", "cw", "TC|SB|ML", 0, 34603,
+  # Havant -> Bognor
   7403080498, "cowes", "cowes", "acw", "TC|SB",  0, 18211,
   1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
   1250104735, "culmers", "folkestone", "cw", "TC|SB", 16545, 40297,
