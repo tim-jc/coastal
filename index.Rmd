@@ -60,7 +60,7 @@ valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", colo
 ### Ferries taken
 
 ```{r}
-valueBox("14", icon = "fa-ship", color = "#EDF0F1")
+valueBox("18", icon = "fa-ship", color = "#EDF0F1")
 
 # List of ferries, to keep track!
 
@@ -78,7 +78,10 @@ valueBox("14", icon = "fa-ship", color = "#EDF0F1")
 # 12 Tobermory -> Kilchoan
 # 13 Mallaig -> Armadale
 # 14 East Cowes -> West Cowes
-
+# 15 Hayling Island
+# 16 Portsmouth -> Gosport
+# 17 Warsash -> Hamble
+# 18 Mudeford
 ```
 
 Row 
