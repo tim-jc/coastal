@@ -2,6 +2,9 @@
 
 # Define values -----------------------------------------------------------
 
+# Source local DB config
+source("config.R")
+
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
