@@ -21,10 +21,10 @@ coastal_activities <- tribble(
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
   # Wales north
-  # <id>, "bristol", "swansea", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
-  # <id>, "swansea", "tenby", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
-  # <id>, "tenby", "newport", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
-  # <id>, "newport", "mathafarn", "cw", "TC|SB|WR|TS|ML", <start_time>, <end_time> 
+  8992413973, "newport", "machynlleth", "cw", "TC|WR|TS|ML", 832, 32960, 
+  8985824154, "tenby", "newport", "cw", "TC|SB|WR|TS|ML", 0, 36655, 
+  8978887674, "swansea", "tenby", "cw", "TC|SB|WR|TS|ML", 321, 33120,
+  8972919601, "bristol", "swansea", "cw", "TC|SB|WR|TS|ML", 2189, 33945,
   5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27308,
   5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
   5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
