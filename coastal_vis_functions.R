@@ -28,8 +28,8 @@ coastal_activities <- tribble(
   5836688186, "washford", "bristol", "cw", "TC|SB|DA|TS|WR", 0, 27308,
   5831004889, "tintagel", "washford", "cw", "TC|SB|DA|TS|WR", 0, 48232,
   5824943588, "penzance", "tintagel", "cw", "TC|SB|DA|TS|WR", 0, 39186,
-  5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51318,
-  5564763338, "looe", "exmouth", "acw", "TC|SB|DA", 0, 44658,
+  5560406484, "penzance", "looe", "acw", "TC|SB|DA", 0, 51100,
+  5564763338, "looe", "exmouth", "acw", "TC|SB|DA", 69, 44658,
   5575822827, "exmouth", "bournemouth", "acw", "TC|SB|DA", 0, 45040,
   8848979854, "havant", "bournemouth", "cw", "TC|SB|ML", 0, 34603,
   # Havant -> Bognor
@@ -37,19 +37,18 @@ coastal_activities <- tribble(
   1250873973, "folkestone", "bognor", "cw", "TC|SB",  0, 41420,
   1250104735, "culmers", "folkestone", "cw", "TC|SB", 16545, 40297,
   7709542211, "rochester", "culmers", "cw", "TC", 7920, 27166,
-  5906287061, "battlesbridge", "rochester", "cw", "TC|SB", 475, 42125, 
-  177822252, "maldon", "battlesbridge", "cw", "TC", 13000, 25175,
-  415714188, "maldon", "peldon", "acw", "TC", 11370, 17545,
-  # Mega Ferry here
-  233045883, "southwold", "snape", "cw", "TC|SB", 7175, 20430,
-  753905298, "hunstanton", "southwold", "cw", "TC|AH" , 0, 35020,
+  5906287061, "rochford", "rochester", "cw", "TC|SB", 3902, 42125, 
+  9641255722, "maldon", "rochford", "cw", "TC|WR|TS|SR", 64, 11243,
+  9634786328, "aldeburgh", "maldon", "cw", "TC|WR|TS|SR", 3753, 41694,
+  9628132541, "southwold", "aldeburgh", "cw", "TC|WR|TS|SR", 5551, 17544,
+  753905298, "hunstanton", "southwold", "cw", "TC|AH" , 0, 35015,
   870993393, "boston", "hunstanton", "cw", "TC", 16250, 28975,
   4049860168, "boston", "hull", "acw", "TC|SB|DA", 205, 33323,
   4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
   4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 21970
-  # Inverness -> Newcastle
+  # Newcastle -> Inverness
   # NC500
-) %>% 
+  ) %>% 
   mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"), 
          riders_pretty = str_replace_all(riders, "\\|", ", "))
 
@@ -60,7 +59,7 @@ xp_unit <- 15
 xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
                            56000,62000,70000,78000,88000,94000,100000,110000,121000,130000,140000,150000,170000,180000,190000,200000,220000,
                            230000,250000,260000,280000,290000,310000,330000,340000,360000,380000,400000,420000,440000,460000,480000,500000)
-                    ) %>% 
+) %>% 
   mutate(xp_level = seq_along(xp),
          next_xp = lead(xp))
 
@@ -353,14 +352,14 @@ draw_miles_climb_plot <- function() {
 get_image_metadata <- function() {
   
   exifr::read_exif("docs/images",
-            args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
-            recursive = T) %>% 
+                   args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
+                   recursive = T) %>% 
     mutate(image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
            image_source = str_c(docs_folder_path,"images/",FileName),
            image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
            marker_popup = str_c("<a href=\"", image_source, "\" target=\"_blank\">",
-                           "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
-                           image_description)
+                                "<img src=\"",image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",  
+                                image_description)
     )
   
 }
