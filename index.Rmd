@@ -59,9 +59,11 @@ valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", colo
 ### Ferries taken
 
 ```{r}
-valueBox("19", icon = "fa-ship", color = "#EDF0F1")
+valueBox("24", icon = "fa-ship", color = "#EDF0F1")
 
 # List of ferries, to keep track!
+
+# Turn this into a table, including strava id of ride for each ferry
 
 # 1 Tilbury -> Gravesend
 # 2 Poole Harbour
@@ -82,6 +84,11 @@ valueBox("19", icon = "fa-ship", color = "#EDF0F1")
 # 17 Warsash -> Hamble
 # 18 Mudeford
 # 19 Ferryside -> Llansteffan
+# 20 Butley Ferry
+# 21 Bawdsey -> Felixstowe
+# 22 Felixstowe -> Harwich
+# 23 Brightlingsea -> Mersea Island
+# 24 Burnham YH -> Essex Marina
 ```
 
 Row 
