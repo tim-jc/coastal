@@ -224,7 +224,9 @@ draw_xp_plot <- function() {
            total_xp > xp) %>% 
     mutate(xp_window = next_xp - xp,
            percent_level_complete = (total_xp - xp) / xp_window,
-           text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)"),
+           text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)
+                                 {round(total_dist,1)} miles ridden
+                                 {round(total_elev,1)} metres climbed"),
            rider = factor(rider),
            rider = fct_reorder(rider, total_xp),
            img_path = str_c(docs_folder_path,rider,".png"), # path to hover image of each riders trace
