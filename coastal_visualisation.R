@@ -1,4 +1,5 @@
 # libraries
+library(stravR)
 library(extrafont)
 library(tidyverse)
 library(DBI)
@@ -37,11 +38,20 @@ leaflet() %>%
   addTiles() %>% 
   add_track(full_dataset)
 
+
+# Loop and export for each rider ------------------------------------------
+
+for(rider in riders) {
+  
+ rider_dataset <- full_dataset %>% filter(str_detect(riders, rider))
+ 
+ rider_index <- rides_index %>% filter(str_detect(riders, rider))
+
 # Plot --------------------------------------------------------------------
 
 map_track <- ggplot() + 
   geom_polygon(data = uk_outline_map, aes(x = long, y = lat, group = group), fill = "#192a56") +
-  geom_point(data = full_dataset, aes(x = lng, y = lat),  colour = "#ffffff", size = 0.1, alpha = 0.9) +
+  geom_point(data = rider_dataset, aes(x = lng, y = lat),  colour = "#ffffff", size = 0.1, alpha = 0.9) +
   coord_map() +
   scale_colour_gradient2(low = "#2980B9", mid = "#6DD5FA", high = "#ffffff") +
   theme(axis.title = element_blank(),
@@ -51,7 +61,7 @@ map_track <- ggplot() +
         panel.background = element_rect(fill = "#273c75"),
         plot.background = element_rect(fill = "#273c75", colour = NA))
 
-summary_data <- rides_index %>% 
+summary_data <- rider_index %>% 
   mutate(yr = as.character(yr)) %>% 
   group_by(yr) %>% 
   summarise(total_miles = sum(distance_miles),
@@ -115,7 +125,7 @@ background <- ggplot() +
 # Annotations -------------------------------------------------------------
 
 title_string <- "COASTING"
-sub_title_string <- str_glue("{min(rides_index$ride_start) %>% as_date() %>% format('%B %Y')} to {max(rides_index$ride_start) %>% as_date() %>% format('%B %Y')}
+sub_title_string <- str_glue("{min(rider_index$ride_start) %>% as_date() %>% format('%B %Y')} to {max(rider_index$ride_start) %>% as_date() %>% format('%B %Y')}
                              {sum(summary_data$total_miles, na.rm = T) %>% as.integer()} miles ridden
                              {sum(summary_data$total_climb, na.rm = T) %>% as.integer()} metres climbed") 
 
@@ -138,13 +148,15 @@ gg_out <- ggdraw(background) +
   draw_plot(miles, x = x_val+0.05, y = 0.1, width = 0.275, height = 0.2) +
   draw_plot(climb, x = x_val+0.65, y = 0.6, width = 0.275, height = 0.2) +
   draw_text(title_string, x = x_val+0.01, y = (1-y_val) * 0.97, size = 80, family = "Avenir", colour = "#FFFFFF", fontface = "bold", hjust = 0) +
-  draw_line(
-    x = c(x_val, 1-x_val, 1-x_val, x_val, x_val),
-    y = c(y_val, y_val, 1-y_val, 1-y_val, y_val),
-    color = "white", size = 1
-  ) +
+  # Uncomment section below to display aperture of frame mount
+  # draw_line(
+  #   x = c(x_val, 1-x_val, 1-x_val, x_val, x_val),
+  #   y = c(y_val, y_val, 1-y_val, 1-y_val, y_val),
+  #   color = "white", size = 1
+  # ) +
   draw_text(sub_title_string, x = x_val+0.01, y = (1-y_val) * 0.915, size = 20, family = "Avenir", colour = "#FFFFFF", hjust = 0)
 
 
-ggsave(filename = "coastal_vis.png", device = "png", width = a2_width, height = a2_height, units = "mm",  dpi = 300)
+ggsave(filename = str_glue("coastal_vis_{rider}.png"), device = "png", width = a2_width, height = a2_height, units = "mm",  dpi = 300)
 
+}
