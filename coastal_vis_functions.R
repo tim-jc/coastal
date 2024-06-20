@@ -5,6 +5,35 @@
 # Source local DB config
 source("config.R")
 
+# Table of ferries and locations
+ferries <- tribble(
+  ~ferry, ~strava_id, ~lat, ~lng,
+  "Tilbury -> Gravesend", 5906287061, 51.448386, 0.371552,
+  "Sandbanks", 5575822827, 50.681738, -1.949315,
+  "Dartmouth -> Kingswear", 5564763338, 50.348742, -3.575669,
+  "Salcombe", 5564763338, 50.235731, -3.765182,
+  "Torpoint -> Plymouth", 5564763338, 50.375810, -4.188294,
+  "Fowey -> Polruan", 5560406484, 50.331343, -4.635739,
+  "Falmouth -> St Mawes", 5560406484, 50.154367, -5.036136,
+  "Padstow", 5824943588, 50.543438, -4.930992,
+  "Ardrossan -> Brodick", 7055062883, 55.607871, -4.969103,
+  "Lochranza -> Claonaig", 7060605792, 55.733197, -5.339097,
+  "Oban -> Craignure", 7072272567, 56.440869, -5.583040,
+  "Tobermory -> Kilchoan", 7072272567, 56.658632, -6.066250,
+  "Mallaig -> Armadale", 7076591578, 57.039403, -5.852108,
+  "East Cowes -> West Cowes", 7403080498, 50.757738, -1.291578,
+  "Hayling Island", 8848979854, 50.796715, -1.027668,
+  "Portsmouth -> Gosport", 8848979854, 50.795424, -1.112938,
+  "Warsash -> Hamble", 8848979854, 50.855839, -1.310089,
+  "Mudeford", 8848979854, 50.721583, -1.743585,
+  "Ferryside -> Llansteffan", 8978887674, 51.770486, -4.377032,
+  "Butley Ferry", 9634786328, 52.080330, 1.490391,
+  "Bawdsey -> Felixstowe", 9634786328, 51.990132, 1.392646,
+  "Felixstowe -> Harwich", 9634786328, 51.945829, 1.304259,
+  "Brightlingsea -> Mersea Island", 9634786328, 51.800945, 1.011537,
+  "Burnham YH -> Essex Marina", 9641255722, 51.623854, 0.803652
+) %>% mutate(ferry = str_glue("{ferry} Ferry"))
+
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
@@ -20,7 +49,10 @@ coastal_activities <- tribble(
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
-  # Wales north
+  # <strava_id>, "kinmel bay", "chester", "cw", "TC|SB", <start_time>, <end_time>,
+  11622261830, "glan-yr-afon", "kinmel bay", "cw", "TC|SB|WR|TS|ML", 220, 18414,
+  11614847759, "nefyn", "glan-yr-afon", "cw", "TC|SB|WR|TS|ML", 21, 50465,
+  11605843542, "machynlleth", "nefyn", "cw", "TC|SB|WR|TS|ML", 2410, 36293,
   8992413973, "newport", "machynlleth", "cw", "TC|WR|TS|ML", 832, 32960, 
   8985824154, "tenby", "newport", "cw", "TC|SB|WR|TS|ML", 0, 36655, 
   8978887674, "swansea", "tenby", "cw", "TC|SB|WR|TS|ML", 321, 33120,
@@ -70,9 +102,13 @@ phiets_red <- "#D50032"
 
 section_start_icon <- makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "white", iconColor = phiets_navy)
 photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "white", iconColor = phiets_red)
+ferry_icon <- makeAwesomeIcon(icon = "fa-ship", library = "fa", markerColor = "white", iconColor = phiets_navy)
 
 #github docs folder file path
 docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/docs/"
+
+# factor to convert metres to miles
+metres_to_miles <- 0.0006213
 
 # Functions ---------------------------------------------------------------
 
@@ -91,7 +127,7 @@ get_coastal_rides <- function() {
 
 load_gps_data <- function() {
   
-  # Connect to SQLite DB, pull down geocode data and activity list
+  # Connect to DB, pull down geocode data and activity list
   # data from the activity list table for coastal rides to go here
   geocodes <- tbl(con, "geocodes") %>% collect()
   
@@ -141,7 +177,7 @@ create_summary <- function() {
               finish_time = max(time),
               start_lon = lng[which(time == start_time)],
               start_lat = lat[which(time == start_time)],
-              distance_miles = sum(dist_since_prev, na.rm = T) * 0.0006213,
+              distance_miles = sum(dist_since_prev, na.rm = T) * metres_to_miles,
               elevation_metres = sum(climb_since_prev, na.rm = T),
               dist_per_elev = distance_miles / elevation_metres) %>% 
     distinct() %>% 
@@ -156,6 +192,17 @@ create_summary <- function() {
     mutate(adventure_id = cumsum(is_new_adventure),
            is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]) %>% 
     select(-c(ride_prev_day, ride_next_day, is_new_adventure))
+  
+  activity_data <- tbl(con, "activities") %>%
+    mutate(distance_whole_ride_miles = distance * metres_to_miles) %>%
+    select(strava_id, distance_whole_ride_miles) %>%
+    filter(strava_id %in% coastal_ids) %>%
+    collect()
+  
+  df <- df %>% 
+    left_join(activity_data) %>% 
+    mutate(coastal_percentage = distance_miles / distance_whole_ride_miles,
+           coastal_percentage = if_else(coastal_percentage > 1, 1, coastal_percentage))
   
   return(df)
   
@@ -198,7 +245,8 @@ draw_map <- function(map_type) {
   map <- map %>% 
     addAwesomeMarkers(data = rides_index %>% filter(ride_name %in% ride_names), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_name, icon = section_start_icon, clusterOptions = markerClusterOptions(), group = "Ride start points") %>% 
     addAwesomeMarkers(data = images %>% filter(), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos") %>% 
-    addLayersControl(overlayGroups = c("Photos", "Ride start points"),
+    addAwesomeMarkers(data = ferries, lng = ~lng, lat = ~lat, popup = ~ferry, label = ~ferry, icon = ferry_icon, clusterOptions = markerClusterOptions(), group = "Ferries") %>% 
+    addLayersControl(overlayGroups = c("Photos", "Ride start points", "Ferries"),
                      options = layersControlOptions(collapsed = F))
   
   return(map)
@@ -301,7 +349,7 @@ draw_miles_by_hour_plot <- function() {
     mutate(hour_of_day = hour(time_of_day),
            hour_text = if_else(hour_of_day < 10, str_c("0",hour_of_day), as.character(hour_of_day))) %>% 
     group_by(hour_of_day, hour_text) %>% 
-    summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * 0.0006213) %>% 
+    summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * metres_to_miles) %>% 
     mutate(text_label = str_glue("From: {hour_text}00 to {hour_text}59
                                  Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}")) %>% 
     ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
