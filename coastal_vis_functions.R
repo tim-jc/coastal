@@ -230,9 +230,12 @@ draw_map <- function(map_type) {
   
   if(map_type == "latest") {
     
-    ride_names <- rides_index %>% filter(is_latest_adventure) %>% pull(ride_name)
+    ride_names <- rides_index$ride_name[rides_index$is_latest_adventure]
     
-    images <- image_metadata %>% filter(image_date %in% (rides_index %>% filter(is_latest_adventure) %>% pull(start_date)))
+    images <- image_metadata %>% filter(image_date %in% rides_index$start_date[rides_index$is_latest_adventure])
+    
+    ferries <- ferries %>% filter(strava_id %in% rides_index$strava_id[rides_index$is_latest_adventure])
+    
     
   }
   
@@ -244,10 +247,20 @@ draw_map <- function(map_type) {
   
   map <- map %>% 
     addAwesomeMarkers(data = rides_index %>% filter(ride_name %in% ride_names), lng = ~start_lon, lat = ~start_lat, popup = ~marker_popup, label = ~ride_name, icon = section_start_icon, clusterOptions = markerClusterOptions(), group = "Ride start points") %>% 
-    addAwesomeMarkers(data = images %>% filter(), lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos") %>% 
-    addAwesomeMarkers(data = ferries, lng = ~lng, lat = ~lat, popup = ~ferry, label = ~ferry, icon = ferry_icon, clusterOptions = markerClusterOptions(), group = "Ferries") %>% 
-    addLayersControl(overlayGroups = c("Photos", "Ride start points", "Ferries"),
-                     options = layersControlOptions(collapsed = F))
+    addAwesomeMarkers(data = images, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos")
+  
+  # handle an adventure with no ferries
+  if(nrow(ferries) > 0) {
+    map <- map %>% 
+      addAwesomeMarkers(data = ferries, lng = ~lng, lat = ~lat, popup = ~ferry, label = ~ferry, icon = ferry_icon, clusterOptions = markerClusterOptions(), group = "Ferries") %>% 
+      addLayersControl(overlayGroups = c("Photos", "Ride start points", "Ferries"),
+                       options = layersControlOptions(collapsed = F))
+  } else {
+    map <- map %>% 
+      addLayersControl(overlayGroups = c("Photos", "Ride start points"),
+                       options = layersControlOptions(collapsed = F))
+  }
+    
   
   return(map)
   
