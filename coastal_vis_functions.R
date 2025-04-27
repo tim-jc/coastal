@@ -425,7 +425,8 @@ get_image_metadata <- function() {
   exifr::read_exif("docs/images",
                    args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
                    recursive = T) %>% 
-    mutate(image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
+    mutate(GPSLongitude = as.numeric(GPSLongitude),
+           image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
            image_source = str_c(docs_folder_path,"images/",FileName),
            image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
            marker_popup = str_c("<a href=\"", image_source, "\" target=\"_blank\">",
