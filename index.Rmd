@@ -1,0 +1,159 @@
+---
+title: "phïets::coasting"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    theme: 
+      version: 4
+      bootswatch: flatly
+    navbar: 
+    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
+    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
+---
+
+```{r setup, include=FALSE}
+libs <- c("flexdashboard","DT","tidyverse","plotly","leaflet","leaflet.extras","DBI","lubridate","mapdata","stravR")
+purrr::walk(libs, ~library(.,character.only = T))
+
+# clear the memory
+rm(list=ls(all = TRUE))
+
+source("coastal_vis_functions.R")
+
+full_dataset <- load_gps_data()
+
+rides_index <- create_summary()
+
+image_metadata <- get_image_metadata()
+
+# Export individual rider maps as .png files
+walk(riders, export_rider_maps)
+
+```
+
+Maps
+===================================== 
+
+Row
+-----------------------------------------------------------------------
+
+### Miles ridden
+
+```{r}
+valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#EDF0F1")
+```
+
+### Metres climbed
+
+```{r}
+valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#EDF0F1")
+```
+
+### Days ridden
+
+```{r}
+valueBox(rides_index$start_date %>% unique() %>% length(), icon = "fa-sun", color = "#EDF0F1")
+```
+
+### Ferries taken
+
+```{r}
+valueBox(nrow(ferries), icon = "fa-ship", color = "#EDF0F1")
+
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Overall progress
+
+```{r}
+draw_map("all")
+```
+
+### Latest ride
+
+```{r}
+draw_map("latest")
+```
+
+Stats
+===================================== 
+
+Row
+-----------------------------------------------------------------------
+
+### Most Northerly
+
+```{r}
+get_coord_valuebox("N")
+```
+
+### Most Southerly
+
+```{r}
+get_coord_valuebox("S")
+```
+
+### Most Easterly
+
+```{r}
+get_coord_valuebox("E")
+```
+
+### Most Westerly
+
+```{r}
+get_coord_valuebox("W")
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Contributors
+
+```{r}
+draw_xp_plot()
+```
+
+### Miles ridden by hour of day
+
+```{r}
+draw_miles_by_hour_plot()
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Distance / climb by year
+
+```{r}
+draw_miles_climb_plot()
+```
+
+Rides
+===================================== 
+
+Row
+-----------------------------------------------------------------------
+
+```{r}
+dt <- rides_index %>% 
+  mutate(ride_name_link = str_c("<a href = \"",strava_link,"\">",ride_name,"</a>"),
+         ride_start_lbl = as_date(ride_start),
+         distance_miles = if_else(distance_miles > distance_whole_ride_miles, distance_whole_ride_miles, distance_miles)) %>%
+  select(ride_name_link, ride_start_lbl, riders, distance_whole_ride_miles, distance_miles, elevation_metres, coastal_percentage)
+
+datatable(dt,
+          escape = FALSE,
+          colnames =  c("Ride Name", "Ride Date", "Riders", "Total Distance (mi)", "Coastal Distance (mi)", "Elevation (m)", "Percentage Coastal"), 
+          rownames = FALSE,
+          extensions = 'Scroller', #'Buttons',
+          options = list(dom = 'Bfrti',
+                         scrollY = 350,
+                         pageLength = nrow(rides_index),
+                         searchHighlight = TRUE)) %>% 
+  formatRound(c("distance_whole_ride_miles", "distance_miles", "elevation_metres"), digits = 1) %>% 
+  formatPercentage("coastal_percentage", digits = 1)
+```
