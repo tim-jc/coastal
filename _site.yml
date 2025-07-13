@@ -1,0 +1,3 @@
+name: "coastal_flexdash"
+output_dir: docs
+exclude: ["*.csv", "vis_output", "gps_data", "*.db", "*.png"]
