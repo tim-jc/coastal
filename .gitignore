@@ -38,3 +38,4 @@ coastal.Rproj
 *.db
 # Other
 config.R
+*.pages
