@@ -32,19 +32,17 @@ ferries <- tribble(
   "Felixstowe -> Harwich", 9634786328, 51.945829, 1.304259,
   "Brightlingsea -> Mersea Island", 9634786328, 51.800945, 1.011537,
   "Burnham YH -> Essex Marina", 9641255722, 51.623854, 0.803652,
-  "Itchenor", 15095197221, 50.808844, -0.865772 
-  # Oban -> Castlebay, <strava_id>, 56.778565, -6.601922,
-  #"Ardmhòr -> Eriskay", <strava_id>, 57.045633, -7.361339,
-  #"Berneray -> Leverburgh", <strava_id>, 57.710011, -7.045988,
-  #"Stornoway -> Ullapool", <strava_id>, 58.053987, -5.780267
+  "Itchenor", 15095197221, 50.808844, -0.865772, 
+  "Ardmhòr -> Eriskay", 15720148185, 57.045633, -7.361339,
+  "Berneray -> Leverburgh", 15720148185, 57.710011, -7.045988
 ) %>% mutate(ferry = str_glue("{ferry} Ferry"))
 
 # Master table of activities. New activities to be added here, in geographical order
 coastal_activities <- tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
-  #<strava_id>, "tarbert", "stornoway", "cw", "TC|TS", <start_time>, <end_time>,
-  #<strava_id>, "eriskay", "tarbert", "cw", "TC|TS", <start_time>, <end_time>,
-  #<strava_id>, "vatersay", "ardmhòr", "cw", "TC|TS", <start_time>, <end_time>,
+  15731925300, "tarbert", "stornoway", "cw", "TC|TS", 65, 30683,
+  15720148185, "ardmhòr", "tarbert", "cw", "TC|TS", 1260, 45165,
+  15709407056, "vatersay", "eolaigearraidh", "cw", "TC|TS", 2310, 8000,
   7081454837, "harrapool", "strathcarron", "cw", "TC|SB|WR", 0, 10442,
   7076591578, "acharacle", "harrapool", "cw", "TC|SB|WR", 0, 26453,
   7072272567, "oban", "acharacle", "cw", "TC|SB|WR", 0, 34095,
