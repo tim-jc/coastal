@@ -436,29 +436,32 @@ get_image_metadata <- function() {
 
 get_coord_valuebox <- function(pos_needed) {
   
+  positions <- position_extremities %>% 
+    filter(extremity == pos_needed) %>% 
+    mutate(city_name = case_when(!is.na(village) ~ village,
+                                 !is.na(town) ~ town)) %>% 
+    slice_head(n = 1)
+  
   if(pos_needed == "N") {
-    df <- full_dataset %>% filter(lat == max(lat))
     icon_str <- "fa-arrow-up"
   }
   
   if(pos_needed == "S") {
-    df <- full_dataset %>% filter(lat == min(lat))
     icon_str <- "fa-arrow-down"
   }
   
   if(pos_needed == "E") {
-    df <- full_dataset %>% filter(lng == max(lng))
     icon_str <- "fa-arrow-right"
   }
   
   if(pos_needed == "W") {
-    df <- full_dataset %>% filter(lng == min(lng))
     icon_str <- "fa-arrow-left"
   }
   
-  link_str <- str_glue("https://www.google.com/maps/place/{df$lat}N+{if_else(df$lng>0,str_c(df$lng,\"E\"),str_c(0 - df$lng,\"W\"))}")
+  link_str <- str_glue("https://www.google.com/maps/place/{positions$lat}N+{if_else(positions$lng>0,str_c(positions$lng,\"E\"),str_c(0 - positions$lng,\"W\"))}")
+  vb <- valueBox(positions$city_name, icon = icon_str, color = "#EDF0F1", href = link_str)
+  return(vb)
   
-  valueBox(df$town, icon = icon_str, color = "#EDF0F1", href = link_str)
 }
 
 export_rider_maps <- function(rider) {

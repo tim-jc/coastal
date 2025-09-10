@@ -25,6 +25,15 @@ full_dataset <- load_gps_data()
 
 rides_index <- create_summary()
 
+position_extremities <- full_dataset %>% 
+  select(lat, lng) %>% 
+  mutate(extremity = case_when(lat == max(lat) ~ "N",
+                               lat == min(lat) ~ "S",
+                               lng == max(lng) ~ "E",
+                               lng == min(lng) ~ "W")) %>% 
+  filter(!is.na(extremity)) %>% 
+  tidygeocoder::reverse_geocode(long = lng, lat = lat, full_results = T)
+
 image_metadata <- get_image_metadata()
 
 # Export individual rider maps as .png files

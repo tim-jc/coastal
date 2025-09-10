@@ -15,7 +15,7 @@ source("config.R")
 
 # Load ride ---------------------------------------------------------------
 
-ride_id <- 15095197221
+ride_id <- 15709407056
 
 ride_data <- tbl(con, "streams") %>% filter(strava_id == ride_id) %>% collect()
 
@@ -29,7 +29,7 @@ max(ride_data$time)
 
 leaflet() %>% 
   addTiles() %>% 
-  add_track(ride_data %>% filter(time >= 17992,
-                                 time <= 17994),
+  add_track(ride_data %>% filter(time >= 2310,
+                                 time <= 8000),
             track_colour = "blue")
 
