@@ -6,16 +6,16 @@ rm(list=ls(all = TRUE))
 setwd("~/Documents/Coding/R/Strava/coastal/lindisfarne_tides/")
 
 # Load
-apr <- read_tsv("apr_25.tsv", trim_ws = T) %>% mutate(mth = "Apr25")
-may <- read_tsv("may_25.tsv", trim_ws = T) %>% mutate(mth = "May25")
-jun <- read_tsv("jun_25.tsv", trim_ws = T) %>% mutate(mth = "Jun25")
-jul <- read_tsv("jul_25.tsv", trim_ws = T) %>% mutate(mth = "Jul25")
-aug <- read_tsv("aug_25.tsv", trim_ws = T) %>% mutate(mth = "Aug25")
-sep <- read_tsv("sep_25.tsv", trim_ws = T) %>% mutate(mth = "Sep25")
+apr <- read_tsv("apr_26.tsv", trim_ws = T) %>% mutate(mth = "Apr26")
+may <- read_tsv("may_26.tsv", trim_ws = T) %>% mutate(mth = "May26")
+jun <- read_tsv("jun_26.tsv", trim_ws = T) %>% mutate(mth = "Jun26")
+jul <- read_tsv("jul_26.tsv", trim_ws = T) %>% mutate(mth = "Jul26")
+aug <- read_tsv("aug_26.tsv", trim_ws = T) %>% mutate(mth = "Aug26")
+sep <- read_tsv("sep_26.tsv", trim_ws = T) %>% mutate(mth = "Sep26")
 
 
 # Clean
-tide_times <- bind_rows(apr, may, jun, jul, aug, sep) %>% 
+tide_times <- bind_rows(apr, may) %>% 
   mutate(date = str_c(str_extract(Date, "\\d{1,2}"),mth),
          date = dmy(date)) %>% 
   select(-c(Date, Day, mth)) %>% 
@@ -58,7 +58,12 @@ date_options <- tide_times %>%
 workable_crossings <- date_options %>% count(pair_id) %>% filter(n == 2) %>% pull(pair_id)
 
 date_options <- date_options %>% 
-  filter(pair_id %in% workable_crossings)
+  filter(pair_id %in% workable_crossings) %>% 
+  mutate(from_dectime = hour(from) + minute(from)/60,
+         until_dectime = hour(until) + minute(until)/60)
+
+
+
 
 write_csv(date_options, "lindisfarne_tide_options.csv")
 

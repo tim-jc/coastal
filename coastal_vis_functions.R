@@ -81,8 +81,10 @@ coastal_activities <- tribble(
   9628132541, "southwold", "aldeburgh", "cw", "TC|WR|TS|SR", 5551, 17544,
   753905298, "hunstanton", "southwold", "cw", "TC|AH", 382, 35015,
   14294527868, "boston", "hunstanton", "cw", "TC|WR|TS", 3095, 35725,
-  4049860168, "boston", "hull", "acw", "TC|SB|DA", 205, 33323,
-  4055608848, "hull", "staithes", "acw", "TC|SB|DA", 0, 35523,
+  18241293474, "boston", "mablethorpe", "acw", "TC|WR|TS|ML", 11235, 28775,
+  18255965742, "mablethorpe", "withernsea", "acw", "TC|WR|TS|ML", 1925, 41715,
+  18264839802, "withernsea", "aldbrough", "acw", "TC|WR|TS|ML", 185, 3385,
+  4055608848, "aldbrough", "staithes", "acw", "TC|SB|DA", 2320, 35523,
   4058882682, "staithes", "newcastle", "acw", "TC|SB|DA", 0, 21970
   # Newcastle -> Inverness
   # NC500
