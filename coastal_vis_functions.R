@@ -6,7 +6,7 @@
 source("config.R")
 
 # Table of ferries and locations
-ferries <- tribble(
+ferries <- dplyr::tribble(
   ~ferry, ~strava_id, ~lat, ~lng,
   "Tilbury -> Gravesend", 5906287061, 51.448386, 0.371552,
   "Sandbanks", 5575822827, 50.681738, -1.949315,
@@ -35,10 +35,10 @@ ferries <- tribble(
   "Itchenor", 15095197221, 50.808844, -0.865772, 
   "Ardmhòr -> Eriskay", 15720148185, 57.045633, -7.361339,
   "Berneray -> Leverburgh", 15720148185, 57.710011, -7.045988
-) %>% mutate(ferry = str_glue("{ferry} Ferry"))
+) %>% dplyr::mutate(ferry = str_glue("{ferry} Ferry"))
 
 # Master table of activities. New activities to be added here, in geographical order
-coastal_activities <- tribble(
+coastal_activities <- dplyr::tribble(
   ~strava_id, ~from, ~to, ~ride_direction, ~riders, ~ride_start_time, ~ride_end_time,
   15731925300, "tarbert", "stornoway", "cw", "TC|TS", 65, 30683,
   15720148185, "ardmhòr", "tarbert", "cw", "TC|TS", 1260, 45165,
@@ -89,28 +89,28 @@ coastal_activities <- tribble(
   # Newcastle -> Inverness
   # NC500
   ) %>% 
-  mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"), 
+  dplyr::mutate(ride_name = str_glue("{str_to_title(from)} -> {str_to_title(to)}"), 
          riders_pretty = str_replace_all(riders, "\\|", ", "))
 
 coastal_ids <- coastal_activities$strava_id
 
 xp_unit <- 15
 
-xp_levels <- tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
+xp_levels <- dplyr::tibble(xp = c(0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 13000, 16000, 19000,23000,28000,33000,38000,44000,50000,
                            56000,62000,70000,78000,88000,94000,100000,110000,121000,130000,140000,150000,170000,180000,190000,200000,220000,
                            230000,250000,260000,280000,290000,310000,330000,340000,360000,380000,400000,420000,440000,460000,480000,500000)
 ) %>% 
-  mutate(xp_level = seq_along(xp),
+  dplyr::mutate(xp_level = seq_along(xp),
          next_xp = lead(xp))
 
-riders <- coastal_activities %>% mutate(riders = str_split(riders,"\\|")) %>% unnest(riders) %>% pull(riders) %>% unique()
+riders <- coastal_activities %>% dplyr::mutate(riders = str_split(riders,"\\|")) %>% tidyr::unnest(riders) %>% dplyr::pull(riders) %>% unique()
 
 phiets_navy <- "#0C2340"
 phiets_red <- "#D50032"
 
-section_start_icon <- makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "white", iconColor = phiets_navy)
-photo_icon <- makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "white", iconColor = phiets_red)
-ferry_icon <- makeAwesomeIcon(icon = "fa-ship", library = "fa", markerColor = "white", iconColor = phiets_navy)
+section_start_icon <- leaflet::makeAwesomeIcon(icon = "fa-play", library = "fa", markerColor = "white", iconColor = phiets_navy)
+photo_icon <- leaflet::makeAwesomeIcon(icon = "fa-camera", library = "fa", markerColor = "white", iconColor = phiets_red)
+ferry_icon <- leaflet::makeAwesomeIcon(icon = "fa-ship", library = "fa", markerColor = "white", iconColor = phiets_navy)
 
 #github docs folder file path
 docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/docs/"
@@ -125,8 +125,8 @@ get_coastal_rides <- function() {
   ride_streams <- tbl(con, "streams") %>% filter(strava_id %in% coastal_ids) %>% collect()
   
   ride_streams <- ride_streams %>% 
-    inner_join(coastal_activities, by = "strava_id") %>% 
-    filter(time >= ride_start_time,
+    dplyr::inner_join(coastal_activities, by = "strava_id") %>% 
+    dplyr::filter(time >= ride_start_time,
            time <= ride_end_time) 
   
   return(ride_streams)
@@ -138,7 +138,7 @@ load_gps_data <- function() {
   # Connect to DB, pull down geocode data and activity list
   # data from the activity list table for coastal rides to go here
   geocodes <- tbl(con, "geocodes") %>% collect()
-  
+
   activity_list <- tbl(con, "activities") %>% select(strava_id, ride_start, strava_link) %>% filter(strava_id %in% coastal_ids) %>% collect()
   
   # Arrange dataframe
@@ -281,7 +281,7 @@ draw_xp_plot <- function() {
   rider_xp <- rides_index %>% 
     select(riders, distance_miles, elevation_metres) %>% 
     mutate(rider = str_split(riders, "\\|")) %>% 
-    unnest(cols = "rider") %>% 
+    tidyr::unnest(cols = "rider") %>% 
     group_by(rider) %>% 
     summarise(total_dist = sum(distance_miles),
               total_elev = sum(elevation_metres),
