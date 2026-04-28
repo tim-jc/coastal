@@ -139,12 +139,12 @@ load_gps_data <- function() {
   # data from the activity list table for coastal rides to go here
   geocodes <- tbl(con, "geocodes") %>% collect()
 
-  activity_list <- tbl(con, "activities") %>% select(strava_id, ride_start, strava_link) %>% filter(strava_id %in% coastal_ids) %>% collect()
+  activity_list <- tbl(con, "activities") %>% dplyr::select(strava_id, ride_start, strava_link) %>% filter(strava_id %in% coastal_ids) %>% collect()
   
   # Arrange dataframe
   ride_streams <- get_coastal_rides() %>%  
     inner_join(activity_list, by = "strava_id") %>%
-    mutate(sort_time = if_else(ride_direction == "cw", -time, time),
+    dplyr::mutate(sort_time = if_else(ride_direction == "cw", -time, time),
            ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
            ride_start = as.POSIXct(ride_start),
            time_of_day = ride_start + seconds(time),
@@ -155,22 +155,22 @@ load_gps_data <- function() {
                                 "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
     arrange(ride_name, sort_time) %>% 
     left_join(geocodes, by = c("lng", "lat")) %>% 
-    mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
+    dplyr::mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
            town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
     ) %>% 
     left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
-    mutate(point_id = seq(1,nrow(.),1))
+    dplyr::mutate(point_id = seq(1,nrow(.),1))
   
   ride_streams <- ride_streams %>% 
-    group_by(strava_id) %>% 
-    mutate(prev_lng = lag(lng),
+    dplyr::group_by(strava_id) %>% 
+    dplyr::mutate(prev_lng = lag(lng),
            prev_lat = lag(lat),
            prev_alt = lag(altitude),
            longlat1 = map2(lng, lat, function(x,y) c(x,y)),
            longlat2 = map2(prev_lng, prev_lat, function(x,y) c(x,y)),
            dist_since_prev = map2(longlat1, longlat2, function(x,y) geosphere::distm(x,y)) %>% unlist(),
            climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)) %>% 
-    select(-matches("^longlat")) %>% 
+    dplyr::select(-matches("^longlat")) %>% 
     ungroup()
   
   return(ride_streams)
@@ -180,8 +180,8 @@ load_gps_data <- function() {
 create_summary <- function() {
   
   df <- full_dataset %>% 
-    group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
-    summarise(start_time = min(time),
+    dplyr::group_by(ride_name, ride_start, yr, riders, strava_id, strava_link, ride_direction, marker_popup) %>% 
+    dplyr::summarise(start_time = min(time),
               finish_time = max(time),
               start_lon = lng[which(time == start_time)],
               start_lat = lat[which(time == start_time)],
@@ -191,25 +191,25 @@ create_summary <- function() {
     distinct() %>% 
     ungroup() %>% 
     arrange(ride_start) %>% 
-    mutate(start_date = as.Date(ride_start),
+    dplyr::mutate(start_date = as.Date(ride_start),
            is_latest_ride = start_date == max(start_date),
            ride_prev_day = start_date == lag(start_date) + days(1),
            ride_next_day = start_date == lead(start_date) - days(1),
            is_new_adventure = case_when(!ride_prev_day | is.na(ride_prev_day) ~ T)) %>% 
     replace_na(list(is_new_adventure = F)) %>% 
-    mutate(adventure_id = cumsum(is_new_adventure),
+    dplyr::mutate(adventure_id = cumsum(is_new_adventure),
            is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]) %>% 
-    select(-c(ride_prev_day, ride_next_day, is_new_adventure))
+    dplyr::select(-c(ride_prev_day, ride_next_day, is_new_adventure))
   
   activity_data <- tbl(con, "activities") %>%
-    mutate(distance_whole_ride_miles = distance * metres_to_miles) %>%
-    select(strava_id, distance_whole_ride_miles) %>%
+    dplyr::mutate(distance_whole_ride_miles = distance * metres_to_miles) %>%
+    dplyr::select(strava_id, distance_whole_ride_miles) %>%
     filter(strava_id %in% coastal_ids) %>%
     collect()
   
   df <- df %>% 
     left_join(activity_data) %>% 
-    mutate(coastal_percentage = distance_miles / distance_whole_ride_miles,
+    dplyr::mutate(coastal_percentage = distance_miles / distance_whole_ride_miles,
            coastal_percentage = if_else(coastal_percentage > 1, 1, coastal_percentage))
   
   return(df)
@@ -279,11 +279,11 @@ draw_xp_plot <- function() {
   mile_equivalent_climb <- min(rides_index$dist_per_elev)
   
   rider_xp <- rides_index %>% 
-    select(riders, distance_miles, elevation_metres) %>% 
-    mutate(rider = str_split(riders, "\\|")) %>% 
+    dplyr::select(riders, distance_miles, elevation_metres) %>% 
+    dplyr::mutate(rider = str_split(riders, "\\|")) %>% 
     tidyr::unnest(cols = "rider") %>% 
-    group_by(rider) %>% 
-    summarise(total_dist = sum(distance_miles),
+    dplyr::group_by(rider) %>% 
+    dplyr::summarise(total_dist = sum(distance_miles),
               total_elev = sum(elevation_metres),
               dist_xp = total_dist * xp_unit,
               elev_xp = total_elev * mile_equivalent_climb * xp_unit,
@@ -291,7 +291,7 @@ draw_xp_plot <- function() {
     crossing(xp_levels) %>% 
     filter(total_xp <= next_xp,
            total_xp > xp) %>% 
-    mutate(xp_window = next_xp - xp,
+    dplyr::mutate(xp_window = next_xp - xp,
            percent_level_complete = (total_xp - xp) / xp_window,
            text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)
                                  {round(total_dist,1)} miles ridden
@@ -367,11 +367,11 @@ draw_xp_plot <- function() {
 draw_miles_by_hour_plot <- function() {
   
   mbh_plot <- full_dataset %>% 
-    mutate(hour_of_day = hour(time_of_day),
+    dplyr::mutate(hour_of_day = hour(time_of_day),
            hour_text = if_else(hour_of_day < 10, str_c("0",hour_of_day), as.character(hour_of_day))) %>% 
-    group_by(hour_of_day, hour_text) %>% 
-    summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * metres_to_miles) %>% 
-    mutate(text_label = str_glue("From: {hour_text}00 to {hour_text}59
+    dplyr::group_by(hour_of_day, hour_text) %>% 
+    dplyr::summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * metres_to_miles) %>% 
+    dplyr::mutate(text_label = str_glue("From: {hour_text}00 to {hour_text}59
                                  Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}")) %>% 
     ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
     geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.2) +
@@ -392,10 +392,10 @@ draw_miles_by_hour_plot <- function() {
 draw_miles_climb_plot <- function() {
   
   dist_climb_yr <- rides_index %>% 
-    group_by(yr) %>% 
-    summarise(tot_miles = sum(distance_miles) %>% round(0),
+    dplyr::group_by(yr) %>% 
+    dplyr::summarise(tot_miles = sum(distance_miles) %>% round(0),
               tot_elev = sum(elevation_metres) %>% round(0)) %>% 
-    mutate(yr = as.character(yr),
+    dplyr::mutate(yr = as.character(yr),
            adjusted_elev = -tot_elev/10) %>% 
     pivot_longer(-c(yr, tot_elev))
   
@@ -425,7 +425,7 @@ get_image_metadata <- function() {
   exifr::read_exif("docs/images",
                    args = c("-FileName","-GPSLatitude", "-GPSLongitude", "-DateTimeOriginal", "-ImageDescription", "-Description", "-Caption-Abstract"),
                    recursive = T) %>% 
-    mutate(GPSLongitude = as.numeric(GPSLongitude),
+    dplyr::mutate(GPSLongitude = as.numeric(GPSLongitude),
            image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
            image_source = str_c(docs_folder_path,"images/",FileName),
            image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
@@ -440,7 +440,7 @@ get_coord_valuebox <- function(pos_needed) {
   
   positions <- position_extremities %>% 
     filter(extremity == pos_needed) %>% 
-    mutate(city_name = case_when(!is.na(village) ~ village,
+    dplyr::mutate(city_name = case_when(!is.na(village) ~ village,
                                  !is.na(town) ~ town)) %>% 
     slice_head(n = 1)
   
@@ -472,8 +472,8 @@ export_rider_maps <- function(rider) {
   
   rider_dataset <- full_dataset %>% 
     filter(str_detect(riders, rider)) %>% 
-    select(strava_id, lat, lng) %>% 
-    mutate(lat = round(lat, 2),
+    dplyr::select(strava_id, lat, lng) %>% 
+    dplyr::mutate(lat = round(lat, 2),
            lng = round(lng, 2)) %>% 
     distinct()
   
