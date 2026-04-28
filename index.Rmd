@@ -1,5 +1,5 @@
 ---
-title: "phïets::coasting"
+title: "coasting"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
@@ -7,9 +7,6 @@ output:
     theme: 
       version: 4
       bootswatch: flatly
-    navbar: 
-    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
-    - { icon: "fa-circle", href: "http://phiets.cc", align: right}
 ---
 
 ```{r setup, include=FALSE}
