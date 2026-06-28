@@ -34,6 +34,7 @@ vignettes/*.pdf
 coastal_vis.*
 coastal.Rproj
 *.DS_Store
+docs/*.png
 # databases
 *.db
 # Other
