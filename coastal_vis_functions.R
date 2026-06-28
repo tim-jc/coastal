@@ -2,12 +2,9 @@
 
 # Define values -----------------------------------------------------------
 
-# Source local DB config
-source("config.R")
-
 # Table of ferries and locations
 ferries <- dplyr::tribble(
-  ~ferry, ~activity_id, ~latitude, ~longitude,
+  ~ferry, ~activity_id, ~lat, ~lng,
   "Tilbury -> Gravesend", 5906287061, 51.448386, 0.371552,
   "Sandbanks", 5575822827, 50.681738, -1.949315,
   "Dartmouth -> Kingswear", 5564763338, 50.348742, -3.575669,
@@ -57,7 +54,7 @@ coastal_activities <- dplyr::tribble(
   6193006840, "seascale", "carlisle", "cw", "TC|SB|WR", 0, 26200,
   6188924719, "lancaster", "seascale", "cw", "TC|SB|WR", 40, 42273,
   6184233328, "chester", "lancaster", "cw", "TC|SB|WR", 3959, 43595,
-  # <activity_id>, "kinmel bay", "chester", "cw", "TC|SB", <start_time>, <end_time>,
+  # 19088138409, "kinmel bay", "chester", "cw", "TC|TS", <start_time>, <end_time>,
   11622261830, "glan-yr-afon", "kinmel bay", "cw", "TC|SB|WR|TS|ML", 220, 18414,
   11614847759, "nefyn", "glan-yr-afon", "cw", "TC|SB|WR|TS|ML", 21, 50465,
   11605843542, "machynlleth", "nefyn", "cw", "TC|SB|WR|TS|ML", 2410, 36293,
@@ -123,78 +120,110 @@ metres_to_miles <- 0.0006213
 
 # Functions ---------------------------------------------------------------
 
-get_coastal_rides <- function() {
-  
-  ride_streams <- tbl(con, "activity_streams") %>% filter(activity_id %in% coastal_ids) %>% collect()
-  
-  ride_streams <- ride_streams %>% 
-    dplyr::inner_join(coastal_activities, by = "activity_id") %>% 
-    dplyr::filter(time >= ride_start_time,
-                  time <= ride_end_time) 
-  
-  return(ride_streams)
-  
+select_stream_columns <- function(streams) {
+  streams %>%
+    dplyr::select(
+      activity_id,
+      sample_index,
+      time_seconds,
+      distance = distance_metres,
+      latitude,
+      longitude,
+      lat = latitude,
+      lng = longitude,
+      altitude = altitude_metres,
+      velocity_smooth = velocity_smooth_metres_per_second,
+      heartrate = heartrate_bpm,
+      cadence = cadence_rpm,
+      watts,
+      temp = temperature_celsius,
+      moving = is_moving,
+      grade_smooth = grade_smooth_percent
+    )
 }
 
-load_gps_data <- function() {
+get_coastal_rides <- function(connection = con, activities = coastal_activities) {
+  activity_ids <- activities$activity_id
+
+  ride_streams <- silver_tbl("activity_streams", connection) %>%
+    dplyr::filter(activity_id %in% activity_ids) %>%
+    select_stream_columns() %>%
+    dplyr::collect()
+  
+  ride_streams %>%
+    dplyr::inner_join(activities, by = "activity_id") %>%
+    dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time)
+}
+
+load_gps_data <- function(connection = con, activities = coastal_activities) {
   
   # Connect to DB, pull down geocode data and activity list
   # data from the activity list table for coastal rides to go here
   # geocodes <- tbl(con, "geocodes") %>% collect()
   
-  activity_list <- tbl(con, "activities") %>%
-    dplyr::mutate(strava_link = paste0("https://www.strava.com/activities/19045845136/segments/",activity_id)) %>% 
-    dplyr::select(activity_id, start_date_local, strava_link) %>% filter(activity_id %in% coastal_ids) %>% collect()
+  activity_ids <- activities$activity_id
+  
+  activity_list <- silver_tbl("activities", connection) %>%
+    dplyr::mutate(
+      strava_link = paste0("https://www.strava.com/activities/", activity_id)
+    ) %>%
+    dplyr::select(
+      activity_id,
+      start_date_local = start_datetime_local,
+      strava_link
+    ) %>%
+    dplyr::filter(activity_id %in% activity_ids) %>%
+    dplyr::collect()
   
   # Arrange dataframe
-  ride_streams <- get_coastal_rides() %>%  
-    inner_join(activity_list, by = "activity_id") %>%
-    dplyr::mutate(sort_time = if_else(ride_direction == "cw", -time, time),
-                  ride_name = factor(ride_name, levels = coastal_activities$ride_name, ordered = T),
+  ride_streams <- get_coastal_rides(connection, activities) %>%  
+    dplyr::inner_join(activity_list, by = "activity_id") %>%
+    dplyr::mutate(sort_time = if_else(ride_direction == "cw", -time_seconds, time_seconds),
+                  ride_name = factor(ride_name, levels = activities$ride_name, ordered = T),
                   start_date_local = as.POSIXct(start_date_local),
-                  time_of_day = start_date_local + seconds(time),
+                  time_of_day = start_date_local + seconds(time_seconds),
                   yr = lubridate::year(start_date_local),
                   marker_popup = str_c(ride_name, "<br>",
                                        format(start_date_local, "%d-%b-%y"), "<br>",
                                        riders_pretty, "<br>",
                                        "<a href=", strava_link, " target=\"_blank\">Strava")) %>% 
-    arrange(ride_name, sort_time) %>% 
+    arrange(ride_name, sort_time) #%>% 
     # left_join(geocodes, by = c("longitude", "latitude")) %>% 
-    dplyr::mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
-                  town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
-    ) %>% 
-    left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
-    dplyr::mutate(point_id = seq(1,nrow(.),1))
+    # dplyr::mutate(postcode = str_extract(location_string, "[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}"),
+    #               town = str_remove(location_string, ", [A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}.*") %>% str_extract("([^,]+$)") %>% str_trim(),
+    # ) %>% 
+    # left_join(read_csv("csv/open_postcode_elevation.csv"), by = "postcode") %>% 
+    # dplyr::mutate(point_id = seq(1,nrow(.),1))
   
   ride_streams <- ride_streams %>% 
     dplyr::group_by(activity_id) %>% 
-    dplyr::mutate(prev_lng = lag(longitude),
-                  prev_lat = lag(latitude),
+    dplyr::mutate(prev_lng = lag(lng),
+                  prev_lat = lag(lat),
                   prev_alt = lag(altitude),
-                  longlat1 = map2(longitude, latitude, function(x,y) c(x,y)),
-                  longlat2 = map2(prev_lng, prev_lat, function(x,y) c(x,y)),
-                  dist_since_prev = map2(longlat1, longlat2, function(x,y) geosphere::distm(x,y)) %>% unlist(),
+                  dist_since_prev = geosphere::distHaversine(
+                    cbind(prev_lng, prev_lat),
+                    cbind(lng, lat)
+                  ),
                   climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)) %>% 
-    dplyr::select(-matches("^longlat")) %>% 
     ungroup()
   
   return(ride_streams)
   
 }
 
-create_summary <- function() {
+create_summary <- function(full_dataset, connection = con, activity_ids = coastal_ids) {
   
   df <- full_dataset %>% 
     dplyr::group_by(ride_name, start_date_local, yr, riders, activity_id, strava_link, ride_direction, marker_popup) %>% 
-    dplyr::summarise(start_time = min(time),
-                     finish_time = max(time),
-                     start_lon = longitude[which(time == start_time)],
-                     start_lat = latitude[which(time == start_time)],
+    dplyr::summarise(start_time = min(time_seconds),
+                     finish_time = max(time_seconds),
+                     start_lon = lng[which.min(time_seconds)],
+                     start_lat = lat[which.min(time_seconds)],
                      distance_miles = sum(dist_since_prev, na.rm = T) * metres_to_miles,
                      elevation_metres = sum(climb_since_prev, na.rm = T),
-                     dist_per_elev = distance_miles / elevation_metres) %>% 
+                     dist_per_elev = distance_miles / elevation_metres,
+                     .groups = "drop") %>% 
     distinct() %>% 
-    ungroup() %>% 
     arrange(start_date_local) %>% 
     dplyr::mutate(start_date = as.Date(start_date_local),
                   is_latest_ride = start_date == max(start_date),
@@ -206,14 +235,14 @@ create_summary <- function() {
                   is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]) %>% 
     dplyr::select(-c(ride_prev_day, ride_next_day, is_new_adventure))
   
-  activity_data <- tbl(con, "activities") %>%
-    dplyr::mutate(distance_whole_ride_miles = distance * metres_to_miles) %>%
+  activity_data <- silver_tbl("activities", connection) %>%
+    dplyr::mutate(distance_whole_ride_miles = distance_metres * metres_to_miles) %>%
     dplyr::select(activity_id, distance_whole_ride_miles) %>%
-    dplyr::filter(activity_id %in% coastal_ids) %>%
-    collect()
+    dplyr::filter(activity_id %in% activity_ids) %>%
+    dplyr::collect()
   
   df <- df %>% 
-    left_join(activity_data) %>% 
+    dplyr::left_join(activity_data, by = "activity_id") %>% 
     dplyr::mutate(coastal_percentage = distance_miles / distance_whole_ride_miles,
                   coastal_percentage = if_else(coastal_percentage > 1, 1, coastal_percentage))
   
@@ -221,7 +250,13 @@ create_summary <- function() {
   
 }
 
-draw_map <- function(map_type) {
+draw_map <- function(
+    map_type,
+    full_dataset,
+    rides_index,
+    image_metadata,
+    ferries_data = ferries
+) {
   
   map <- leaflet() %>% 
     addTiles('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
@@ -239,6 +274,8 @@ draw_map <- function(map_type) {
     
     images <- image_metadata
     
+    ferry_markers <- ferries_data
+    
   }
   
   if(map_type == "latest") {
@@ -247,7 +284,7 @@ draw_map <- function(map_type) {
     
     images <- image_metadata %>% filter(image_date %in% rides_index$start_date[rides_index$is_latest_adventure])
     
-    ferries <- ferries %>% filter(activity_id %in% rides_index$activity_id[rides_index$is_latest_adventure])
+    ferry_markers <- ferries_data %>% filter(activity_id %in% rides_index$activity_id[rides_index$is_latest_adventure])
     
     
   }
@@ -263,9 +300,9 @@ draw_map <- function(map_type) {
     addAwesomeMarkers(data = images, lng = ~GPSLongitude, lat = ~GPSLatitude, popup = ~marker_popup, icon = photo_icon, clusterOptions = markerClusterOptions(), group = "Photos")
   
   # handle an adventure with no ferries
-  if(nrow(ferries) > 0) {
+  if(nrow(ferry_markers) > 0) {
     map <- map %>% 
-      addAwesomeMarkers(data = ferries, lng = ~lng, lat = ~latitude, popup = ~ferry, label = ~ferry, icon = ferry_icon, clusterOptions = markerClusterOptions(), group = "Ferries") %>% 
+      addAwesomeMarkers(data = ferry_markers, lng = ~lng, lat = ~lat, popup = ~ferry, label = ~ferry, icon = ferry_icon, clusterOptions = markerClusterOptions(), group = "Ferries") %>% 
       addLayersControl(overlayGroups = c("Photos", "Ride start points", "Ferries"),
                        options = layersControlOptions(collapsed = F))
   } else {
@@ -279,7 +316,7 @@ draw_map <- function(map_type) {
   
 }
 
-draw_xp_plot <- function() {
+draw_xp_plot <- function(rides_index) {
   
   mile_equivalent_climb <- min(rides_index$dist_per_elev)
   
@@ -370,7 +407,7 @@ draw_xp_plot <- function() {
   
 }
 
-draw_miles_by_hour_plot <- function() {
+draw_miles_by_hour_plot <- function(full_dataset) {
   
   mbh_plot <- full_dataset %>% 
     dplyr::mutate(hour_of_day = hour(time_of_day),
@@ -395,7 +432,7 @@ draw_miles_by_hour_plot <- function() {
   
 }
 
-draw_miles_climb_plot <- function() {
+draw_miles_climb_plot <- function(rides_index) {
   
   dist_climb_yr <- rides_index %>% 
     dplyr::group_by(yr) %>% 
@@ -442,7 +479,7 @@ get_image_metadata <- function() {
   
 }
 
-get_coord_valuebox <- function(pos_needed) {
+get_coord_valuebox <- function(pos_needed, position_extremities) {
   
   positions <- position_extremities %>% 
     filter(extremity == pos_needed) %>% 
@@ -466,26 +503,26 @@ get_coord_valuebox <- function(pos_needed) {
     icon_str <- "fa-arrow-left"
   }
   
-  link_str <- str_glue("https://www.google.com/maps/place/{positions$latitude}N+{if_else(positions$longitude>0,str_c(positions$longitude,\"E\"),str_c(0 - positions$longitude,\"W\"))}")
+  link_str <- str_glue("https://www.google.com/maps/place/{positions$lat}N+{if_else(positions$lng>0,str_c(positions$lng,\"E\"),str_c(0 - positions$lng,\"W\"))}")
   vb <- valueBox(positions$city_name, icon = icon_str, color = "#EDF0F1", href = link_str)
   return(vb)
   
 }
 
-export_rider_maps <- function(rider) {
+export_rider_maps <- function(rider, full_dataset) {
   
   uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
   
   rider_dataset <- full_dataset %>% 
     filter(str_detect(riders, rider)) %>% 
-    dplyr::select(activity_id, latitude, longitude) %>% 
-    dplyr::mutate(latitude = round(latitude, 2),
-                  longitude = round(longitude, 2)) %>% 
+    dplyr::select(activity_id, lat, lng) %>% 
+    dplyr::mutate(lat = round(lat, 2),
+                  lng = round(lng, 2)) %>% 
     distinct()
   
   ggplot() + 
-    geom_polygon(data = uk_outline_map, aes(x = long, y = latitude, group = group), fill = "#D3D3D3") +
-    geom_point(data = rider_dataset, aes(x = longitude, y = latitude),  colour = phiets_navy, size = 0.005, alpha = 0.9) +
+    geom_polygon(data = uk_outline_map, aes(x = long, y = lat, group = group), fill = "#D3D3D3") +
+    geom_point(data = rider_dataset, aes(x = lng, y = lat),  colour = phiets_navy, size = 0.005, alpha = 0.9) +
     coord_map(xlim = c(-8,1.5), ylim = c(50, 59)) +
     theme(axis.title = element_blank(),
           axis.text = element_blank(),

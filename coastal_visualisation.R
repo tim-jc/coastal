@@ -14,6 +14,7 @@ loadfonts()
 rm(list=ls(all = TRUE))
 
 # source functions
+source("config.R")
 source("coastal_vis_functions.R")
 
 # Notes / resources -------------------------------------------------------
@@ -28,7 +29,7 @@ source("coastal_vis_functions.R")
 
 full_dataset <- load_gps_data()
 
-rides_index <- create_summary()
+rides_index <- create_summary(full_dataset)
 
 uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
 
@@ -125,7 +126,7 @@ background <- ggplot() +
 # Annotations -------------------------------------------------------------
 
 title_string <- "COASTING"
-sub_title_string <- str_glue("{min(rider_index$ride_start) %>% as_date() %>% format('%B %Y')} to {max(rider_index$ride_start) %>% as_date() %>% format('%B %Y')}
+sub_title_string <- str_glue("{min(rider_index$start_date_local) %>% as_date() %>% format('%B %Y')} to {max(rider_index$start_date_local) %>% as_date() %>% format('%B %Y')}
                              {sum(summary_data$total_miles, na.rm = T) %>% as.integer()} miles ridden
                              {sum(summary_data$total_climb, na.rm = T) %>% as.integer()} metres climbed") 
 
