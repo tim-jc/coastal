@@ -9,15 +9,16 @@ library(stravR)
 # clear the memory
 rm(list=ls(all = TRUE))
 
-source("coastal_vis_functions.R")
 source("config.R")
+source("R/load.R")
 
 
 # Load ride ---------------------------------------------------------------
 
-ride_id <- 7055062883
+ride_id <- 19088138409
 
-ride_data <- tbl(con, "streams") %>% filter(strava_id == ride_id) %>% collect()
+ride_data <- load_activity_stream(ride_id) %>%
+  dplyr::rename(time = time_seconds)
 
 max(ride_data$time)
 
@@ -25,13 +26,14 @@ max(ride_data$time)
 # Draw track, and adjust --------------------------------------------------
 
 # Adjust time filter to crop ride to correct size. Add start and end time
-# values to coastal_activities in functions script
+# values to data/coastal_activities.R
 
 leaflet() %>% 
   addTiles() %>% 
-  add_track(ride_data %>% filter(time >= 14800,
-                                 time <= 14850),
-            track_colour = "blue")
+  add_track(
+    ride_data %>% filter(time >= 20000, time <= 31000),
+    track_colour = "blue"
+  )
 
 
 ride_data %>% filter(time >= 27000) %>% pull(time) %>% min()

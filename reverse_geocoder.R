@@ -13,7 +13,8 @@ library(stravR)
 # clear the memory
 rm(list=ls(all = TRUE))
 
-source("coastal_vis_functions.R")
+source("config.R")
+source("R/load.R")
 
 # bing api key - these refresh annually. If one isn't working, try the other! Otherwise the photon API is unlimited, but a bit less detailed.
 # move these to a local config file too!

@@ -15,7 +15,7 @@ rm(list=ls(all = TRUE))
 
 # source functions
 source("config.R")
-source("coastal_vis_functions.R")
+source("R/load.R")
 
 # Notes / resources -------------------------------------------------------
 
@@ -27,9 +27,14 @@ source("coastal_vis_functions.R")
 
 # Get data ----------------------------------------------------------------
 
-full_dataset <- load_gps_data()
+coastal_data <- load_coastal_data(
+  include_images = FALSE,
+  include_position_extremities = FALSE
+)
 
-rides_index <- create_summary(full_dataset)
+full_dataset <- coastal_data$full_dataset
+rides_index <- coastal_data$rides_index
+riders <- coastal_data$riders
 
 uk_outline_map <-  map_data(map = "worldHires", region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"), xlim=c(-11,3), ylim=c(49.9,58.5))
 

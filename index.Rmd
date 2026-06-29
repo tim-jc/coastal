@@ -17,25 +17,16 @@ purrr::walk(libs, ~library(.,character.only = T))
 rm(list=ls(all = TRUE))
 
 source("config.R")
-source("coastal_vis_functions.R")
+source("R/load.R")
 
-full_dataset <- load_gps_data()
+coastal_data <- load_coastal_data(export_rider_traces = TRUE)
 
-rides_index <- create_summary(full_dataset)
-
-position_extremities <- full_dataset %>% 
-  select(lat, lng) %>% 
-  mutate(extremity = case_when(lat == max(lat) ~ "N",
-                               lat == min(lat) ~ "S",
-                               lng == max(lng) ~ "E",
-                               lng == min(lng) ~ "W")) %>% 
-  filter(!is.na(extremity)) %>% 
-  tidygeocoder::reverse_geocode(long = lng, lat = lat, full_results = T)
-
-image_metadata <- get_image_metadata()
-
-# Export individual rider maps as .png files
-walk(riders, ~export_rider_maps(.x, full_dataset))
+full_dataset <- coastal_data$full_dataset
+rides_index <- coastal_data$rides_index
+position_extremities <- coastal_data$position_extremities
+image_metadata <- coastal_data$image_metadata
+riders <- coastal_data$riders
+ferries <- coastal_data$ferries
 
 ```
 
