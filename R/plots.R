@@ -7,47 +7,72 @@ draw_xp_plot <- function(rides_index) {
     tidyr::unnest(cols = "rider") %>%
     dplyr::mutate(rider = stringr::str_remove_all(rider, "\\(|\\)")) %>%
     dplyr::group_by(rider) %>%
-    dplyr::summarise(total_dist = sum(distance_miles),
-                     total_elev = sum(elevation_metres),
-                     dist_xp = total_dist * xp_unit,
-                     elev_xp = total_elev * mile_equivalent_climb * xp_unit,
-                     total_xp = dist_xp + elev_xp) %>%
+    dplyr::summarise(
+      total_dist = sum(distance_miles),
+      total_elev = sum(elevation_metres),
+      dist_xp = total_dist * xp_unit,
+      elev_xp = total_elev * mile_equivalent_climb * xp_unit,
+      total_xp = dist_xp + elev_xp
+    ) %>%
     crossing(xp_levels) %>%
-    filter(total_xp <= next_xp,
-           total_xp > xp) %>%
-    dplyr::mutate(xp_window = next_xp - xp,
-                  percent_level_complete = (total_xp - xp) / xp_window,
-                  text_label = str_glue("Level {xp_level} ({floor(total_xp)} XP)
+    filter(total_xp <= next_xp, total_xp > xp) %>%
+    dplyr::mutate(
+      xp_window = next_xp - xp,
+      percent_level_complete = (total_xp - xp) / xp_window,
+      text_label = str_glue(
+        "Level {xp_level} ({floor(total_xp)} XP)
                                  {round(total_dist,1)} miles ridden
-                                 {round(total_elev,1)} metres climbed"),
-                  rider = factor(rider),
-                  rider = fct_reorder(rider, total_xp),
-                  img_path = str_c(docs_folder_path,rider,".png"),
-                  img_path_b64 = map_chr(img_path, ~base64enc::dataURI(file = .x)))
+                                 {round(total_elev,1)} metres climbed"
+      ),
+      rider = factor(rider),
+      rider = fct_reorder(rider, total_xp),
+      img_path = str_c(docs_folder_path, "images/rider_maps/", rider, ".png"),
+      img_path_b64 = map_chr(img_path, ~ base64enc::dataURI(file = .x))
+    )
 
   xp_plot <- rider_xp %>%
-    ggplot(aes(x = rider, y = percent_level_complete, text = text_label, customdata = img_path_b64)) +
-    geom_segment(aes(x = rider, y = 0, xend = rider, yend = 1), size = 4, colour = "grey85") +
+    ggplot(aes(
+      x = rider,
+      y = percent_level_complete,
+      text = text_label,
+      customdata = img_path_b64
+    )) +
+    geom_segment(
+      aes(x = rider, y = 0, xend = rider, yend = 1),
+      size = 4,
+      colour = "grey85"
+    ) +
     geom_point(aes(x = rider, y = 1), size = 3.5, colour = "grey85") +
     geom_point(aes(x = rider, y = 0), size = 3.5, colour = phiets_red) +
-    geom_segment(aes(x = rider, y = 0, xend = rider, yend = percent_level_complete), size = 4, colour = phiets_red) +
+    geom_segment(
+      aes(x = rider, y = 0, xend = rider, yend = percent_level_complete),
+      size = 4,
+      colour = phiets_red
+    ) +
     geom_point(size = 10, colour = phiets_navy) +
     geom_point(size = 7, colour = phiets_red) +
     geom_text(aes(label = xp_level)) +
-    geom_text(aes(y = 1.25, label = str_glue("{floor(total_xp)} XP")), hjust = 0, colour = phiets_navy) +
+    geom_text(
+      aes(y = 1.25, label = str_glue("{floor(total_xp)} XP")),
+      hjust = 0,
+      colour = phiets_navy
+    ) +
     coord_flip() +
     scale_y_continuous(lim = c(0, 1.5)) +
     theme_minimal() +
-    theme(axis.text.x = element_blank(),
-          axis.text.y = element_text(colour = phiets_navy),
-          axis.ticks = element_blank(),
-          panel.grid = element_blank()) +
-    labs(x = "",
-         y = "")
+    theme(
+      axis.text.x = element_blank(),
+      axis.text.y = element_text(colour = phiets_navy),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank()
+    ) +
+    labs(x = "", y = "")
 
   xp_plot <- ggplotly(xp_plot, tooltip = "text")
 
-  xp_plot <- xp_plot %>% htmlwidgets::onRender("
+  xp_plot <- xp_plot %>%
+    htmlwidgets::onRender(
+      "
     function(el, x) {
       // when hovering over an element, do something
       el.on('plotly_hover', function(d) {
@@ -80,28 +105,42 @@ draw_xp_plot <- function(rides_index) {
             images: null
         });
           })
-        }")
+        }"
+    )
 
   return(xp_plot)
 }
 
 draw_miles_by_hour_plot <- function(full_dataset) {
   mbh_plot <- full_dataset %>%
-    dplyr::mutate(hour_of_day = hour(time_of_day),
-                  hour_text = if_else(hour_of_day < 10, str_c("0",hour_of_day), as.character(hour_of_day))) %>%
+    dplyr::mutate(
+      hour_of_day = hour(time_of_day),
+      hour_text = if_else(
+        hour_of_day < 10,
+        str_c("0", hour_of_day),
+        as.character(hour_of_day)
+      )
+    ) %>%
     dplyr::group_by(hour_of_day, hour_text) %>%
-    dplyr::summarise(dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * metres_to_miles) %>%
-    dplyr::mutate(text_label = str_glue("From: {hour_text}00 to {hour_text}59
-                                 Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}")) %>%
+    dplyr::summarise(
+      dist_ridden_in_hr_mi = sum(dist_since_prev, na.rm = T) * metres_to_miles
+    ) %>%
+    dplyr::mutate(
+      text_label = str_glue(
+        "From: {hour_text}00 to {hour_text}59
+                                 Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}"
+      )
+    ) %>%
     ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
     geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.2) +
-    scale_x_continuous(breaks = seq(1,24,1)) +
-    labs(x = "\nHour of day",
-         y = "Distance ridden /miles\n") +
+    scale_x_continuous(breaks = seq(1, 24, 1)) +
+    labs(x = "\nHour of day", y = "Distance ridden /miles\n") +
     theme_minimal() +
-    theme(axis.text = element_text(colour = phiets_navy),
-          axis.title = element_text(colour = phiets_navy),
-          panel.grid = element_blank())
+    theme(
+      axis.text = element_text(colour = phiets_navy),
+      axis.title = element_text(colour = phiets_navy),
+      panel.grid = element_blank()
+    )
 
   mbh_plot <- ggplotly(mbh_plot, tooltip = "text")
 
@@ -111,26 +150,37 @@ draw_miles_by_hour_plot <- function(full_dataset) {
 draw_miles_climb_plot <- function(rides_index) {
   dist_climb_yr <- rides_index %>%
     dplyr::group_by(yr) %>%
-    dplyr::summarise(tot_miles = sum(distance_miles) %>% round(0),
-                     tot_elev = sum(elevation_metres) %>% round(0)) %>%
-    dplyr::mutate(yr = as.character(yr),
-                  adjusted_elev = -tot_elev/10) %>%
+    dplyr::summarise(
+      tot_miles = sum(distance_miles) %>% round(0),
+      tot_elev = sum(elevation_metres) %>% round(0)
+    ) %>%
+    dplyr::mutate(yr = as.character(yr), adjusted_elev = -tot_elev / 10) %>%
     pivot_longer(-c(yr, tot_elev))
 
   mc_plot <- dist_climb_yr %>%
     ggplot(aes(x = yr, y = value, colour = name)) +
     geom_segment(aes(xend = yr, yend = 0)) +
     geom_text(y = 0, aes(label = yr), colour = phiets_navy, nudge_x = 0.25) +
-    geom_text(data = dist_climb_yr %>% filter(name == "adjusted_elev"), aes(label = str_c(tot_elev, "m")), nudge_y = -150) +
-    geom_text(data = dist_climb_yr %>% filter(name == "tot_miles"), aes(label = str_c(value, "mi")), nudge_y = 150) +
+    geom_text(
+      data = dist_climb_yr %>% filter(name == "adjusted_elev"),
+      aes(label = str_c(tot_elev, "m")),
+      nudge_y = -150
+    ) +
+    geom_text(
+      data = dist_climb_yr %>% filter(name == "tot_miles"),
+      aes(label = str_c(value, "mi")),
+      nudge_y = 150
+    ) +
     geom_point(size = 3) +
     coord_flip() +
-    scale_colour_manual(values = c(phiets_navy,phiets_red)) +
+    scale_colour_manual(values = c(phiets_navy, phiets_red)) +
     theme_minimal() +
-    theme(axis.text = element_blank(),
-          axis.title = element_blank(),
-          axis.ticks = element_blank(),
-          legend.position = "none")
+    theme(
+      axis.text = element_blank(),
+      axis.title = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position = "none"
+    )
 
   mc_plot <- ggplotly(mc_plot, tooltip = "text")
 
