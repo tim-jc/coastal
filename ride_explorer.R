@@ -31,7 +31,7 @@ max(ride_data$time)
 leaflet() %>% 
   addTiles() %>% 
   add_track(
-    ride_data %>% filter(time >= 20000, time <= 31000),
+    ride_data %>% filter(time >= 29643, time <= 29645),
     track_colour = "blue"
   )
 
