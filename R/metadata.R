@@ -1,7 +1,12 @@
 # Coastal metadata and shared constants.
 
-source("data/ferries.R")
-source("data/coastal_activities.R")
+coastal_project_root <- getOption(
+  "coastal.project_root",
+  normalizePath(".", mustWork = FALSE)
+)
+
+source(file.path(coastal_project_root, "data", "ferries.R"))
+source(file.path(coastal_project_root, "data", "coastal_activities.R"))
 
 coastal_ids <- coastal_activities$activity_id
 

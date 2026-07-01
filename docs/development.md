@@ -19,9 +19,10 @@ Project code is split by responsibility under `R/`.
 Project entry points should load:
 
 ```r
-source("config.R")
 source("R/load.R")
 ```
+
+`R/load.R` loads project packages and sources `config.R` automatically when `con` and `silver_tbl()` are not already loaded. Existing scripts may still source `config.R` explicitly first.
 
 ## Local Configuration
 

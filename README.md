@@ -39,9 +39,10 @@ Rscript scripts/check_inputs.R
 Use this in project entry points:
 
 ```r
-source("config.R")
 source("R/load.R")
 ```
+
+`R/load.R` loads project packages and sources `config.R` automatically when `con` and `silver_tbl()` are not already loaded.
 
 ## Local Configuration
 
