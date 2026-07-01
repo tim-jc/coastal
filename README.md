@@ -1,8 +1,8 @@
 # Coastal
 
-Coastal builds a cycling dashboard for the coastal ride project. It consumes ride activity and stream data from the `cycling_platform_silver` layer, combines it with hand-maintained coastal segment metadata, and renders the public dashboard to `docs/index.html`.
+Coastal builds a cycling dashboard for the coastal ride project. It consumes ride activity and stream data from the `cycling_platform_silver` layer, combines it with hand-maintained coastal segment metadata, and renders the public dashboard to root `index.html`.
 
-The generated `docs/index.html` file is the GitHub Pages publishing artifact. Do not commit regenerated dashboard output while the silver-layer validation is failing.
+The generated root `index.html` file is the GitHub Pages publishing artifact. Do not commit regenerated dashboard output while validation is failing.
 
 ## Current Status
 
@@ -16,7 +16,7 @@ Rscript scripts/check_inputs.R
 
 ## Entry Points
 
-- `index.Rmd`: renders the flexdashboard and writes `docs/index.html`.
+- `index.Rmd`: renders the flexdashboard and writes root `index.html`.
 - `ride_explorer.R`: inspects one activity stream to determine coastal crop windows.
 - `scripts/check_inputs.R`: validates local metadata against the silver tables.
 - `coastal_visualisation.R`: creates static rider visualisations.
@@ -67,12 +67,12 @@ Legacy `DB_*` variable names are still accepted as fallbacks.
 3. Add ferry markers to `data/ferries.R` if relevant.
 4. Run `Rscript scripts/check_inputs.R`.
 5. Render `index.Rmd`.
-6. Review generated changes, especially `docs/index.html` and rider PNGs.
+6. Review generated changes, especially root `index.html` and rider PNGs.
 7. Commit source and generated publishing output only when validation passes.
 
 ## Publishing
 
-GitHub Pages serves from `docs/`. Rendering `index.Rmd` updates `docs/index.html`; pushing that file publishes the dashboard.
+Rendering `index.Rmd` updates root `index.html`; pushing that file publishes the dashboard.
 
 Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
 

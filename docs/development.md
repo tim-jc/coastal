@@ -66,7 +66,7 @@ The input check requires database access and should fail while silver `activity_
 
 Generated files include:
 
-- `docs/index.html`
+- `index.html`
 - rider PNGs under `docs/`
 - print/export image outputs such as `coastal_vis_*.png`
 

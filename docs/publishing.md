@@ -1,16 +1,16 @@
 # Publishing
 
-The public dashboard is published from the `docs/` directory.
+The public dashboard is published from root `index.html`.
 
 ## Main Artifact
 
 `index.Rmd` renders to:
 
 ```text
-docs/index.html
+index.html
 ```
 
-Pushing changes to `docs/index.html` publishes the updated dashboard through GitHub Pages.
+Pushing changes to root `index.html` publishes the updated dashboard through GitHub Pages.
 
 ## Before Publishing
 
@@ -30,14 +30,14 @@ The current known blocker is the empty silver `activity_streams` table. Until th
 2. Run `Rscript scripts/check_inputs.R`.
 3. Render `index.Rmd`.
 4. Review source and generated diffs.
-5. Commit source changes and generated `docs/` output together.
+5. Commit source changes and generated output together.
 6. Push to publish.
 
 ## Generated Output
 
 Generated output is intentionally committed when publishing. This includes:
 
-- `docs/index.html`
+- `index.html`
 - rider trace PNGs under `docs/`
 
 Avoid committing generated churn from failed or partial renders.

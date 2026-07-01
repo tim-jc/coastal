@@ -31,7 +31,7 @@ vignettes/*.pdf
 # Data
 *.csv
 #Outputs
-coastal_vis.*
+coastal_vis_*.png
 coastal.Rproj
 *.DS_Store
 docs/*.png

@@ -74,11 +74,11 @@ index.Rmd
 This updates:
 
 ```text
-docs/index.html
+index.html
 ```
 
 It may also regenerate rider trace PNGs under `docs/`.
 
 ## 6. Publish
 
-Commit generated dashboard output only after validation passes. `docs/index.html` is served by GitHub Pages, so pushing it publishes the dashboard.
+Commit generated dashboard output only after validation passes. Root `index.html` is the published dashboard artifact.

@@ -99,6 +99,8 @@ draw_map <- function(
 }
 
 export_rider_maps <- function(rider, full_dataset) {
+  output_dir <- "docs/images/rider_maps"
+
   uk_outline_map <- map_data(
     map = "worldHires",
     region = c("UK", "Isle of Man", "Isle of Wight", "Wales:Anglesey"),
@@ -135,8 +137,10 @@ export_rider_maps <- function(rider, full_dataset) {
       plot.background = element_rect(fill = "#FFFFFF", colour = NA)
     )
 
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
   ggsave(
-    str_c("docs/images/rider_maps/", rider, ".png"),
+    file.path(output_dir, str_c(rider, ".png")),
     device = "png",
     width = 1000,
     height = 1500,
