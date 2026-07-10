@@ -28,6 +28,13 @@ image_metadata <- coastal_data$image_metadata
 riders <- coastal_data$riders
 ferries <- coastal_data$ferries
 
+latest_adventure <- get_latest_adventure(rides_index)
+latest_adventure_photos <- filter_adventure_images(image_metadata, latest_adventure)
+latest_adventure_summary <- summarise_adventure(
+  latest_adventure,
+  latest_adventure_photos
+)
+
 ```
 
 Maps
@@ -74,6 +81,101 @@ draw_map("all", full_dataset, rides_index, image_metadata)
 
 ```{r}
 draw_map("latest", full_dataset, rides_index, image_metadata)
+```
+
+Latest Adventure
+=====================================
+
+Row
+-----------------------------------------------------------------------
+
+### `r latest_adventure_summary$title`
+
+```{r}
+valueBox(
+  latest_adventure_summary$date_range,
+  icon = "fa-calendar",
+  color = "#EDF0F1"
+)
+```
+
+### Coastal miles
+
+```{r}
+valueBox(
+  floor(latest_adventure_summary$distance_miles),
+  icon = "fa-bicycle",
+  color = "#EDF0F1"
+)
+```
+
+### Metres climbed
+
+```{r}
+valueBox(
+  floor(latest_adventure_summary$elevation_metres),
+  icon = "fa-arrow-up",
+  color = "#EDF0F1"
+)
+```
+
+### Moving time
+
+```{r}
+valueBox(
+  format_duration_hours(latest_adventure_summary$moving_seconds),
+  icon = "fa-clock",
+  color = "#EDF0F1"
+)
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Latest adventure map
+
+```{r}
+draw_map("latest", full_dataset, rides_index, image_metadata)
+```
+
+### Days
+
+```{r}
+latest_adventure_days <- format_adventure_day_table(latest_adventure)
+
+datatable(
+  latest_adventure_days,
+  escape = FALSE,
+  colnames = c(
+    "Date",
+    "Ride",
+    "Riders",
+    "Total Distance (mi)",
+    "Coastal Distance (mi)",
+    "Elevation (m)",
+    "Moving Time",
+    "Percentage Coastal"
+  ),
+  rownames = FALSE,
+  options = list(
+    dom = "t",
+    pageLength = nrow(latest_adventure_days)
+  )
+) %>%
+  formatRound(
+    c("distance_whole_ride_miles", "distance_miles", "elevation_metres"),
+    digits = 1
+  ) %>%
+  formatPercentage("coastal_percentage", digits = 1)
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Photos
+
+```{r}
+render_adventure_photo_gallery(latest_adventure_photos)
 ```
 
 Stats
