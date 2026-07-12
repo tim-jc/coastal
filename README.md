@@ -68,12 +68,11 @@ Legacy `DB_*` variable names are still accepted as fallbacks.
 3. Add ferry markers to `data/ferries.R` if relevant.
 4. Run `Rscript scripts/check_inputs.R`.
 5. Run `Rscript scripts/render_dashboard.R`.
-6. Review generated changes, especially root `index.html` and rider PNGs.
-7. Commit source and generated publishing output only when validation passes.
+6. Review and commit any source changes separately.
 
 ## Publishing
 
-Run `Rscript scripts/render_dashboard.R` to render `index.Rmd` to root `index.html`; pushing that file publishes the dashboard.
+Run `Rscript scripts/render_dashboard.R` to render `index.Rmd` to root `index.html`. When root `index.html` changes, the script commits that file and pushes it to publish the dashboard.
 
 Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
 

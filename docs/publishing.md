@@ -10,7 +10,7 @@ The public dashboard is published from root `index.html`.
 index.html
 ```
 
-Pushing changes to root `index.html` publishes the updated dashboard through GitHub Pages.
+Pushing changes to root `index.html` publishes the updated dashboard through GitHub Pages. The render entry point commits and pushes root `index.html` automatically when it changes.
 
 ## Before Publishing
 
@@ -29,15 +29,12 @@ The current known blocker is the empty silver `activity_streams` table. Until th
 1. Update metadata or source code.
 2. Run `Rscript scripts/check_inputs.R`.
 3. Run `Rscript scripts/render_dashboard.R`.
-4. Review source and generated diffs.
-5. Commit source changes and generated output together.
-6. Push to publish.
+4. Review and commit source changes separately.
 
 ## Generated Output
 
-Generated output is intentionally committed when publishing. This includes:
+Generated output is intentionally committed when publishing. The render entry point currently publishes:
 
 - `index.html`
-- rider trace PNGs under `docs/`
 
-Avoid committing generated churn from failed or partial renders.
+Avoid committing generated churn from failed or partial renders. Preview renders to an alternate output path do not publish.
