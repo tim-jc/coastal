@@ -24,6 +24,14 @@ format_duration_hours <- function(seconds) {
 }
 
 summarise_adventure <- function(adventure_rides, adventure_photos = NULL) {
+  first_ride <- dplyr::first(adventure_rides$ride_name)
+  last_ride <- dplyr::last(adventure_rides$ride_name)
+  adventure_title <- if (first_ride == last_ride) {
+    first_ride
+  } else {
+    str_glue("{first_ride} to {last_ride}")
+  }
+
   riders <- adventure_rides |>
     dplyr::select(riders) |>
     dplyr::mutate(rider = stringr::str_split(riders, "\\|")) |>
@@ -34,9 +42,7 @@ summarise_adventure <- function(adventure_rides, adventure_photos = NULL) {
     dplyr::pull(rider)
 
   dplyr::tibble(
-    title = str_glue(
-      "{dplyr::first(adventure_rides$ride_name)} to {dplyr::last(adventure_rides$ride_name)}"
-    ),
+    title = adventure_title,
     date_range = format_adventure_date_range(adventure_rides),
     days = dplyr::n_distinct(adventure_rides$start_date),
     activities = dplyr::n_distinct(adventure_rides$activity_id),

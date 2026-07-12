@@ -28,7 +28,7 @@ The current known blocker is the empty silver `activity_streams` table. Until th
 
 1. Update metadata or source code.
 2. Run `Rscript scripts/check_inputs.R`.
-3. Render `index.Rmd`.
+3. Run `Rscript scripts/render_dashboard.R`.
 4. Review source and generated diffs.
 5. Commit source changes and generated output together.
 6. Push to publish.

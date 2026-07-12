@@ -64,6 +64,8 @@ create_summary <- function(
       yr,
       riders,
       activity_id,
+      from,
+      to,
       strava_link,
       ride_direction,
       marker_popup
@@ -79,20 +81,20 @@ create_summary <- function(
       .groups = "drop"
     ) |>
     distinct() |>
-    arrange(start_date_local) |>
+    arrange(start_date_local, start_time) |>
     dplyr::mutate(
       start_date = as.Date(start_date_local),
       is_latest_ride = start_date == max(start_date),
-      ride_prev_day = start_date == lag(start_date) + days(1),
-      ride_next_day = start_date == lead(start_date) - days(1),
+      ride_prev_day = start_date == lag(start_date) |
+        start_date == lag(start_date) + days(1),
       is_new_adventure = case_when(!ride_prev_day | is.na(ride_prev_day) ~ T)
     ) |>
     replace_na(list(is_new_adventure = F)) |>
     dplyr::mutate(
       adventure_id = cumsum(is_new_adventure),
-      is_latest_adventure = adventure_id == adventure_id[which(is_latest_ride)]
+      is_latest_adventure = adventure_id == max(adventure_id[is_latest_ride])
     ) |>
-    dplyr::select(-c(ride_prev_day, ride_next_day, is_new_adventure))
+    dplyr::select(-c(ride_prev_day, is_new_adventure))
 
   activity_data <- silver_tbl("activities", connection) |>
     dplyr::mutate(

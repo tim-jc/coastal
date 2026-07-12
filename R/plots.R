@@ -152,34 +152,40 @@ draw_miles_climb_plot <- function(rides_index) {
     dplyr::group_by(yr) %>%
     dplyr::summarise(
       tot_miles = sum(distance_miles) %>% round(0),
-      tot_elev = sum(elevation_metres) %>% round(0)
+      tot_elev = sum(elevation_metres) %>% round(0),
+      .groups = "drop"
     ) %>%
-    dplyr::mutate(yr = as.character(yr), adjusted_elev = -tot_elev / 10) %>%
-    pivot_longer(-c(yr, tot_elev))
+    dplyr::mutate(
+      yr = as.character(yr),
+      elevation_scaled = tot_elev / 10
+    ) %>%
+    tidyr::pivot_longer(
+      c(tot_miles, elevation_scaled),
+      names_to = "metric",
+      values_to = "value"
+    ) %>%
+    dplyr::mutate(
+      metric_label = dplyr::case_when(
+        metric == "tot_miles" ~ "Coastal miles",
+        metric == "elevation_scaled" ~ "Elevation (10m units)"
+      ),
+      text_label = dplyr::case_when(
+        metric == "tot_miles" ~ str_glue("{yr}\nCoastal miles: {value}"),
+        metric == "elevation_scaled" ~ str_glue("{yr}\nElevation: {tot_elev}m")
+      )
+    )
 
   mc_plot <- dist_climb_yr %>%
-    ggplot(aes(x = yr, y = value, colour = name)) +
-    geom_segment(aes(xend = yr, yend = 0)) +
-    geom_text(y = 0, aes(label = yr), colour = phiets_navy, nudge_x = 0.25) +
-    geom_text(
-      data = dist_climb_yr %>% filter(name == "adjusted_elev"),
-      aes(label = str_c(tot_elev, "m")),
-      nudge_y = -150
-    ) +
-    geom_text(
-      data = dist_climb_yr %>% filter(name == "tot_miles"),
-      aes(label = str_c(value, "mi")),
-      nudge_y = 150
-    ) +
-    geom_point(size = 3) +
-    coord_flip() +
-    scale_colour_manual(values = c(phiets_navy, phiets_red)) +
+    ggplot(aes(x = yr, y = value, fill = metric_label, text = text_label)) +
+    geom_col(position = "dodge", alpha = 0.8) +
+    scale_fill_manual(values = c(phiets_red, phiets_navy)) +
+    labs(x = "", y = "", fill = "") +
     theme_minimal() +
     theme(
-      axis.text = element_blank(),
-      axis.title = element_blank(),
+      axis.text = element_text(colour = phiets_navy),
       axis.ticks = element_blank(),
-      legend.position = "none"
+      panel.grid.minor = element_blank(),
+      legend.position = "bottom"
     )
 
   mc_plot <- ggplotly(mc_plot, tooltip = "text")

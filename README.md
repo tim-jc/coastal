@@ -67,13 +67,13 @@ Legacy `DB_*` variable names are still accepted as fallbacks.
 2. Use `ride_explorer.R` to inspect the silver activity stream and choose `ride_start_time` / `ride_end_time`.
 3. Add ferry markers to `data/ferries.R` if relevant.
 4. Run `Rscript scripts/check_inputs.R`.
-5. Render `index.Rmd`.
+5. Run `Rscript scripts/render_dashboard.R`.
 6. Review generated changes, especially root `index.html` and rider PNGs.
 7. Commit source and generated publishing output only when validation passes.
 
 ## Publishing
 
-Rendering `index.Rmd` updates root `index.html`; pushing that file publishes the dashboard.
+Run `Rscript scripts/render_dashboard.R` to render `index.Rmd` to root `index.html`; pushing that file publishes the dashboard.
 
 Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
 

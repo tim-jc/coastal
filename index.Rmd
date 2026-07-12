@@ -40,7 +40,7 @@ latest_adventure_summary <- summarise_adventure(
 Maps
 ===================================== 
 
-Row
+Row {data-height=120}
 -----------------------------------------------------------------------
 
 ### Miles ridden
@@ -68,7 +68,7 @@ valueBox(nrow(ferries), icon = "fa-ship", color = "#EDF0F1")
 
 ```
 
-Row 
+Row {data-height=650}
 -----------------------------------------------------------------------
 
 ### Overall progress
@@ -83,10 +83,37 @@ draw_map("all", full_dataset, rides_index, image_metadata)
 draw_map("latest", full_dataset, rides_index, image_metadata)
 ```
 
+Row {data-height=120}
+-----------------------------------------------------------------------
+
+### Most Northerly
+
+```{r}
+get_coord_valuebox("N", position_extremities)
+```
+
+### Most Southerly
+
+```{r}
+get_coord_valuebox("S", position_extremities)
+```
+
+### Most Easterly
+
+```{r}
+get_coord_valuebox("E", position_extremities)
+```
+
+### Most Westerly
+
+```{r}
+get_coord_valuebox("W", position_extremities)
+```
+
 Latest Adventure
 =====================================
 
-Row
+Row {data-height=120}
 -----------------------------------------------------------------------
 
 ### `r latest_adventure_summary$title`
@@ -129,7 +156,7 @@ valueBox(
 )
 ```
 
-Row
+Row {data-height=650}
 -----------------------------------------------------------------------
 
 ### Latest adventure map
@@ -169,7 +196,7 @@ datatable(
   formatPercentage("coastal_percentage", digits = 1)
 ```
 
-Row
+Row {data-height=360}
 -----------------------------------------------------------------------
 
 ### Photos
@@ -181,40 +208,34 @@ render_adventure_photo_gallery(latest_adventure_photos)
 Stats
 ===================================== 
 
-Row
+Row {data-height=420}
 -----------------------------------------------------------------------
 
-### Most Northerly
+### Cumulative coastal miles
 
 ```{r}
-get_coord_valuebox("N", position_extremities)
+draw_cumulative_progress_plot(rides_index)
 ```
 
-### Most Southerly
+### Distance / climb by year
 
 ```{r}
-get_coord_valuebox("S", position_extremities)
+draw_miles_climb_plot(rides_index)
 ```
 
-### Most Easterly
-
-```{r}
-get_coord_valuebox("E", position_extremities)
-```
-
-### Most Westerly
-
-```{r}
-get_coord_valuebox("W", position_extremities)
-```
-
-Row
+Row {data-height=430}
 -----------------------------------------------------------------------
 
 ### Contributors
 
 ```{r}
-draw_xp_plot(rides_index)
+draw_rider_contribution_plot(rides_index)
+```
+
+### Seasonality
+
+```{r}
+draw_monthly_activity_plot(rides_index)
 ```
 
 ### Miles ridden by hour of day
@@ -223,20 +244,146 @@ draw_xp_plot(rides_index)
 draw_miles_by_hour_plot(full_dataset)
 ```
 
-Row
------------------------------------------------------------------------
-
-### Distance / climb by year
-
-```{r}
-draw_miles_climb_plot(rides_index)
-```
-
 Rides
 ===================================== 
 
-Row
+Row {data-height=120}
 -----------------------------------------------------------------------
+
+### Adventures
+
+```{r}
+valueBox(
+  n_distinct(rides_index$adventure_id),
+  icon = "fa-map",
+  color = "#EDF0F1"
+)
+```
+
+### Active years
+
+```{r}
+valueBox(
+  n_distinct(rides_index$yr),
+  icon = "fa-calendar",
+  color = "#EDF0F1"
+)
+```
+
+### Longest coastal day
+
+```{r}
+valueBox(
+  str_glue("{floor(max(rides_index$distance_miles, na.rm = TRUE))} mi"),
+  icon = "fa-road",
+  color = "#EDF0F1"
+)
+```
+
+### Biggest climb day
+
+```{r}
+valueBox(
+  str_glue(
+    "{format(floor(max(rides_index$elevation_metres, na.rm = TRUE)), big.mark = ',')} m"
+  ),
+  icon = "fa-arrow-up",
+  color = "#EDF0F1"
+)
+```
+
+Row {.tabset data-height=650}
+-----------------------------------------------------------------------
+
+### Rider leaderboard
+
+```{r}
+rider_leaderboard <- format_rider_leaderboard(rides_index)
+
+datatable(
+  rider_leaderboard,
+  rownames = FALSE,
+  colnames = c(
+    "Rider",
+    "Adventures",
+    "Ride Days",
+    "Coastal Miles",
+    "Elevation (m)",
+    "Longest Day (mi)",
+    "Biggest Climb (m)"
+  ),
+  options = list(
+    dom = "t",
+    pageLength = nrow(rider_leaderboard)
+  )
+) %>%
+  formatRound(
+    c(
+      "coastal_miles",
+      "elevation_metres",
+      "longest_day_miles",
+      "biggest_climb_metres"
+    ),
+    digits = 1
+  )
+```
+
+### Adventure rankings
+
+```{r}
+adventure_rankings <- format_adventure_rankings(rides_index)
+
+datatable(
+  adventure_rankings,
+  rownames = FALSE,
+  colnames = c(
+    "Adventure",
+    "Start Date",
+    "End Date",
+    "Days",
+    "Activities",
+    "Coastal Miles",
+    "Elevation (m)",
+    "Riders"
+  ),
+  options = list(
+    dom = "t",
+    pageLength = nrow(adventure_rankings)
+  )
+) %>%
+  formatRound(c("coastal_miles", "elevation_metres"), digits = 1)
+```
+
+### Hardest coastal days
+
+```{r}
+hardest_days <- format_hardest_days_table(rides_index)
+
+datatable(
+  hardest_days,
+  escape = FALSE,
+  rownames = FALSE,
+  colnames = c(
+    "Date",
+    "Ride",
+    "Riders",
+    "Coastal Miles",
+    "Elevation (m)",
+    "Metres / Mile",
+    "Moving Time"
+  ),
+  options = list(
+    dom = "t",
+    pageLength = nrow(hardest_days)
+  )
+) %>%
+  formatRound(
+    c("distance_miles", "elevation_metres", "climb_per_mile"),
+    digits = 1
+  )
+```
+
+### All rides
 
 ```{r}
 dt <- rides_index %>% 
