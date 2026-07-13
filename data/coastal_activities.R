@@ -54,6 +54,7 @@ coastal_activities <- dplyr::tribble(
   # NC500
 ) |>
   dplyr::mutate(
+    coastal_segment_id = dplyr::row_number(),
     ride_name = stringr::str_glue(
       "{stringr::str_to_title(from)} -> {stringr::str_to_title(to)}"
     ),

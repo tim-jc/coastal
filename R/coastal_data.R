@@ -113,6 +113,7 @@ create_summary <- function(
 ) {
   df <- coastal_streams |>
     dplyr::group_by(
+      coastal_segment_id,
       ride_name,
       start_date_local,
       yr,

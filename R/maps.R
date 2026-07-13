@@ -25,15 +25,20 @@ draw_map <- function(
     )
 
   if (map_type == "all") {
+    coastal_segment_ids <- coastal_streams$coastal_segment_id %>% unique()
     ride_names <- coastal_streams$ride_name %>% unique()
+    ride_markers <- rides_index
     images <- image_metadata
     ferry_markers <- ferries_data
   }
 
   if (map_type == "latest") {
-    ride_names <- rides_index$ride_name[rides_index$is_latest_adventure]
+    latest_rides <- rides_index %>% filter(is_latest_adventure)
+    coastal_segment_ids <- latest_rides$coastal_segment_id
+    ride_names <- latest_rides$ride_name
+    ride_markers <- latest_rides
     latest_activity_ids <- as.character(
-      rides_index$activity_id[rides_index$is_latest_adventure]
+      latest_rides$activity_id
     )
     images <- image_metadata %>%
       filter(
@@ -67,8 +72,9 @@ draw_map <- function(
     }
   }
 
-  for (i in ride_names) {
-    track_data <- coastal_streams %>% filter(ride_name == i)
+  for (segment_id in coastal_segment_ids) {
+    track_data <- coastal_streams %>%
+      filter(coastal_segment_id == segment_id)
     track_group <- if_else(
       map_type == "latest",
       "Coastal section",
@@ -89,7 +95,7 @@ draw_map <- function(
 
   map <- map %>%
     addAwesomeMarkers(
-      data = rides_index %>% filter(ride_name %in% ride_names),
+      data = ride_markers,
       lng = ~start_lon,
       lat = ~start_lat,
       popup = ~marker_popup,
@@ -163,7 +169,7 @@ draw_map <- function(
       activity_streams %>%
         filter(as.character(activity_id) %in% latest_activity_ids)
     } else {
-      coastal_streams %>% filter(ride_name %in% ride_names)
+      coastal_streams %>% filter(coastal_segment_id %in% coastal_segment_ids)
     }
 
     if (nrow(bounds_data) > 0) {
