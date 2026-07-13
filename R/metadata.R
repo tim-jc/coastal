@@ -74,8 +74,32 @@ extract_riders <- function(activities = coastal_activities) {
     tidyr::unnest(riders) |>
     dplyr::pull(riders) |>
     stringr::str_remove_all("\\(|\\)") |>
-    unique()
+    unique() |>
+    sort_riders()
 }
+
+sort_riders <- function(riders) {
+  riders <- riders[!is.na(riders) & nzchar(riders)]
+  sorted_riders <- base::sort(unique(riders))
+  c(intersect("TC", sorted_riders), setdiff(sorted_riders, "TC"))
+}
+
+format_rider_list <- function(riders) {
+  if (length(riders) == 0 || all(is.na(riders))) {
+    return(NA_character_)
+  }
+
+  riders |>
+    stringr::str_split("\\|") |>
+    unlist() |>
+    stringr::str_remove_all("\\(|\\)") |>
+    unique() |>
+    sort_riders() |>
+    stringr::str_c(collapse = ", ")
+}
+
+coastal_activities <- coastal_activities |>
+  dplyr::mutate(riders_pretty = purrr::map_chr(riders, format_rider_list))
 
 riders <- extract_riders(coastal_activities)
 

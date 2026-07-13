@@ -34,6 +34,8 @@ latest_adventure_summary <- summarise_adventure(
   latest_adventure,
   latest_adventure_photos
 )
+longest_day_activity <- get_longest_day_activity(rides_index)
+biggest_climb_activity <- get_biggest_climb_activity(rides_index)
 
 ```
 
@@ -274,9 +276,10 @@ valueBox(
 
 ```{r}
 valueBox(
-  str_glue("{floor(max(rides_index$distance_miles, na.rm = TRUE))} mi"),
+  str_glue("{floor(longest_day_activity$distance_miles)} mi"),
   icon = "fa-road",
-  color = "#EDF0F1"
+  color = "#EDF0F1",
+  href = longest_day_activity$strava_link
 )
 ```
 
@@ -285,10 +288,11 @@ valueBox(
 ```{r}
 valueBox(
   str_glue(
-    "{format(floor(max(rides_index$elevation_metres, na.rm = TRUE)), big.mark = ',')} m"
+    "{format(floor(biggest_climb_activity$elevation_metres), big.mark = ',')} m"
   ),
   icon = "fa-arrow-up",
-  color = "#EDF0F1"
+  color = "#EDF0F1",
+  href = biggest_climb_activity$strava_link
 )
 ```
 
@@ -370,11 +374,16 @@ datatable(
     "Coastal Miles",
     "Elevation (m)",
     "Metres / Mile",
+    "Moving Seconds",
     "Moving Time"
   ),
   options = list(
     dom = "t",
-    pageLength = nrow(hardest_days)
+    pageLength = nrow(hardest_days),
+    columnDefs = list(
+      list(visible = FALSE, targets = 6),
+      list(orderData = 6, targets = 7)
+    )
   )
 ) %>%
   formatRound(
@@ -389,8 +398,9 @@ datatable(
 dt <- rides_index %>% 
   mutate(ride_name_link = str_c("<a href = \"",strava_link,"\">",ride_name,"</a>"),
          ride_start_lbl = as_date(start_date_local),
+         riders_display = map_chr(riders, format_rider_list),
          distance_miles = if_else(distance_miles > distance_whole_ride_miles, distance_whole_ride_miles, distance_miles)) %>%
-  select(ride_name_link, ride_start_lbl, riders, distance_whole_ride_miles, distance_miles, elevation_metres, coastal_percentage)
+  select(ride_name_link, ride_start_lbl, riders_display, distance_whole_ride_miles, distance_miles, elevation_metres, coastal_percentage)
 
 datatable(dt,
           escape = FALSE,

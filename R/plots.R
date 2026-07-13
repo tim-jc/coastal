@@ -176,10 +176,17 @@ draw_miles_climb_plot <- function(rides_index) {
     )
 
   mc_plot <- dist_climb_yr %>%
-    ggplot(aes(x = yr, y = value, fill = metric_label, text = text_label)) +
-    geom_col(position = "dodge", alpha = 0.8) +
-    scale_fill_manual(values = c(phiets_red, phiets_navy)) +
-    labs(x = "", y = "", fill = "") +
+    ggplot(aes(
+      x = yr,
+      y = value,
+      fill = metric_label,
+      colour = metric_label,
+      text = text_label
+    )) +
+    geom_col(position = "dodge", alpha = 0.25) +
+    scale_fill_manual(values = c(phiets_red, phiets_navy), name = NULL) +
+    scale_colour_manual(values = c(phiets_red, phiets_navy), name = NULL) +
+    labs(x = "", y = "", fill = NULL, colour = NULL) +
     theme_minimal() +
     theme(
       axis.text = element_text(colour = phiets_navy),
@@ -188,7 +195,8 @@ draw_miles_climb_plot <- function(rides_index) {
       legend.position = "bottom"
     )
 
-  mc_plot <- ggplotly(mc_plot, tooltip = "text")
+  mc_plot <- ggplotly(mc_plot, tooltip = "text") |>
+    layout(legend = list(title = list(text = "")))
 
   return(mc_plot)
 }

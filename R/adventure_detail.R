@@ -32,14 +32,7 @@ summarise_adventure <- function(adventure_rides, adventure_photos = NULL) {
     str_glue("{first_ride} to {last_ride}")
   }
 
-  riders <- adventure_rides |>
-    dplyr::select(riders) |>
-    dplyr::mutate(rider = stringr::str_split(riders, "\\|")) |>
-    tidyr::unnest(rider) |>
-    dplyr::mutate(rider = stringr::str_remove_all(rider, "\\(|\\)")) |>
-    dplyr::distinct(rider) |>
-    dplyr::arrange(rider) |>
-    dplyr::pull(rider)
+  riders <- format_rider_list(adventure_rides$riders)
 
   dplyr::tibble(
     title = adventure_title,
@@ -52,7 +45,7 @@ summarise_adventure <- function(adventure_rides, adventure_photos = NULL) {
       adventure_rides$finish_time - adventure_rides$start_time,
       na.rm = TRUE
     ),
-    riders = stringr::str_c(riders, collapse = ", "),
+    riders = riders,
     photo_count = if (is.null(adventure_photos)) 0 else nrow(adventure_photos)
   )
 }
@@ -78,6 +71,7 @@ format_adventure_day_table <- function(adventure_rides) {
         "</a>"
       ),
       ride_date = as.Date(start_date_local),
+      riders_display = purrr::map_chr(riders, format_rider_list),
       moving_time = format_duration_hours(finish_time - start_time),
       distance_miles = if_else(
         distance_miles > distance_whole_ride_miles,
@@ -88,7 +82,7 @@ format_adventure_day_table <- function(adventure_rides) {
     dplyr::select(
       ride_date,
       ride_name_link,
-      riders,
+      riders = riders_display,
       distance_whole_ride_miles,
       distance_miles,
       elevation_metres,

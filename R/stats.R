@@ -65,8 +65,9 @@ Coastal miles: {round(coastal_miles, 1)}"
 
 draw_rider_contribution_plot <- function(rides_index) {
   rider_totals <- format_rider_leaderboard(rides_index) |>
+    dplyr::arrange(dplyr::desc(coastal_miles)) |>
     dplyr::mutate(
-      rider = forcats::fct_reorder(rider, coastal_miles),
+      rider = factor(rider, levels = rev(rider)),
       text_label = str_glue(
         "{rider}
 Coastal miles: {round(coastal_miles, 1)}
@@ -77,7 +78,7 @@ Elevation: {round(elevation_metres, 0)}m"
 
   plot <- rider_totals |>
     ggplot(aes(x = rider, y = coastal_miles, text = text_label)) +
-    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.8) +
+    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.25) +
     coord_flip() +
     labs(x = "", y = "Coastal miles") +
     theme_minimal() +
@@ -125,6 +126,23 @@ format_rider_leaderboard <- function(rides_index) {
     )
 }
 
+get_longest_day_activity <- function(rides_index) {
+  rides_index |>
+    dplyr::mutate(
+      distance_miles = if_else(
+        distance_miles > distance_whole_ride_miles,
+        distance_whole_ride_miles,
+        distance_miles
+      )
+    ) |>
+    dplyr::slice_max(distance_miles, n = 1, with_ties = FALSE)
+}
+
+get_biggest_climb_activity <- function(rides_index) {
+  rides_index |>
+    dplyr::slice_max(elevation_metres, n = 1, with_ties = FALSE)
+}
+
 format_hardest_days_table <- function(rides_index, n = 12) {
   rides_index |>
     dplyr::mutate(
@@ -136,7 +154,9 @@ format_hardest_days_table <- function(rides_index, n = 12) {
         "</a>"
       ),
       ride_date = as.Date(start_date_local),
-      moving_time = format_duration_hours(finish_time - start_time),
+      riders_display = purrr::map_chr(riders, format_rider_list),
+      moving_seconds = finish_time - start_time,
+      moving_time = format_duration_hours(moving_seconds),
       climb_per_mile = elevation_metres / distance_miles,
       distance_miles = if_else(
         distance_miles > distance_whole_ride_miles,
@@ -152,10 +172,11 @@ format_hardest_days_table <- function(rides_index, n = 12) {
     dplyr::select(
       ride_date,
       ride_name_link,
-      riders,
+      riders = riders_display,
       distance_miles,
       elevation_metres,
       climb_per_mile,
+      moving_seconds,
       moving_time
     )
 }
@@ -174,13 +195,7 @@ format_adventure_rankings <- function(rides_index) {
       activities = dplyr::n_distinct(activity_id),
       coastal_miles = sum(distance_miles, na.rm = TRUE),
       elevation_metres = sum(elevation_metres, na.rm = TRUE),
-      riders = stringr::str_c(
-        sort(unique(stringr::str_remove_all(
-          unlist(stringr::str_split(riders, "\\|")),
-          "\\(|\\)"
-        ))),
-        collapse = ", "
-      ),
+      riders = format_rider_list(riders),
       .groups = "drop"
     ) |>
     dplyr::arrange(dplyr::desc(coastal_miles)) |>
