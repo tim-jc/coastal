@@ -2,11 +2,11 @@ draw_cumulative_progress_plot <- function(rides_index) {
   progress <- rides_index |>
     dplyr::arrange(start_date_local) |>
     dplyr::mutate(
-      cumulative_miles = cumsum(distance_miles),
+      cumulative_miles = cumsum(coastal_distance_miles),
       text_label = str_glue(
         "{ride_name}
 {format(start_date, '%d %b %Y')}
-Coastal miles: {round(distance_miles, 1)}
+Coastal miles: {round(coastal_distance_miles, 1)}
 Project total: {round(cumulative_miles, 1)}"
       )
     )
@@ -38,7 +38,7 @@ draw_monthly_activity_plot <- function(rides_index) {
     dplyr::group_by(month) |>
     dplyr::summarise(
       ride_days = dplyr::n_distinct(start_date),
-      coastal_miles = sum(distance_miles, na.rm = TRUE),
+      coastal_miles = sum(coastal_distance_miles, na.rm = TRUE),
       .groups = "drop"
     ) |>
     dplyr::mutate(
@@ -72,7 +72,7 @@ draw_rider_contribution_plot <- function(rides_index) {
         "{rider}
 Coastal miles: {round(coastal_miles, 1)}
 Ride days: {ride_days}
-Elevation: {round(elevation_metres, 0)}m"
+Coastal climb: {round(coastal_elevation_metres, 0)}m"
       )
     )
 
@@ -98,8 +98,8 @@ format_rider_leaderboard <- function(rides_index) {
       adventure_id,
       start_date,
       riders,
-      distance_miles,
-      elevation_metres
+      coastal_distance_miles,
+      coastal_elevation_metres
     ) |>
     dplyr::mutate(rider = stringr::str_split(riders, "\\|")) |>
     tidyr::unnest(rider) |>
@@ -108,10 +108,10 @@ format_rider_leaderboard <- function(rides_index) {
     dplyr::summarise(
       adventures = dplyr::n_distinct(adventure_id),
       ride_days = dplyr::n_distinct(start_date),
-      coastal_miles = sum(distance_miles, na.rm = TRUE),
-      longest_day_miles = max(distance_miles, na.rm = TRUE),
-      biggest_climb_metres = max(elevation_metres, na.rm = TRUE),
-      elevation_metres = sum(elevation_metres, na.rm = TRUE),
+      coastal_miles = sum(coastal_distance_miles, na.rm = TRUE),
+      longest_day_miles = max(coastal_distance_miles, na.rm = TRUE),
+      biggest_climb_metres = max(coastal_elevation_metres, na.rm = TRUE),
+      coastal_elevation_metres = sum(coastal_elevation_metres, na.rm = TRUE),
       .groups = "drop"
     ) |>
     dplyr::arrange(dplyr::desc(coastal_miles)) |>
@@ -120,7 +120,7 @@ format_rider_leaderboard <- function(rides_index) {
       adventures,
       ride_days,
       coastal_miles,
-      elevation_metres,
+      coastal_elevation_metres,
       longest_day_miles,
       biggest_climb_metres
     )
@@ -129,18 +129,18 @@ format_rider_leaderboard <- function(rides_index) {
 get_longest_day_activity <- function(rides_index) {
   rides_index |>
     dplyr::mutate(
-      distance_miles = if_else(
-        distance_miles > distance_whole_ride_miles,
-        distance_whole_ride_miles,
-        distance_miles
+      coastal_distance_miles = if_else(
+        coastal_distance_miles > overall_distance_miles,
+        overall_distance_miles,
+        coastal_distance_miles
       )
     ) |>
-    dplyr::slice_max(distance_miles, n = 1, with_ties = FALSE)
+    dplyr::slice_max(coastal_distance_miles, n = 1, with_ties = FALSE)
 }
 
 get_biggest_climb_activity <- function(rides_index) {
   rides_index |>
-    dplyr::slice_max(elevation_metres, n = 1, with_ties = FALSE)
+    dplyr::slice_max(coastal_elevation_metres, n = 1, with_ties = FALSE)
 }
 
 format_hardest_days_table <- function(rides_index, n = 12) {
@@ -157,24 +157,24 @@ format_hardest_days_table <- function(rides_index, n = 12) {
       riders_display = purrr::map_chr(riders, format_rider_list),
       moving_seconds = finish_time - start_time,
       moving_time = format_duration_hours(moving_seconds),
-      climb_per_mile = elevation_metres / distance_miles,
-      distance_miles = if_else(
-        distance_miles > distance_whole_ride_miles,
-        distance_whole_ride_miles,
-        distance_miles
+      climb_per_mile = coastal_elevation_metres / coastal_distance_miles,
+      coastal_distance_miles = if_else(
+        coastal_distance_miles > overall_distance_miles,
+        overall_distance_miles,
+        coastal_distance_miles
       )
     ) |>
     dplyr::arrange(
-      dplyr::desc(distance_miles),
-      dplyr::desc(elevation_metres)
+      dplyr::desc(coastal_distance_miles),
+      dplyr::desc(coastal_elevation_metres)
     ) |>
     dplyr::slice_head(n = n) |>
     dplyr::select(
       ride_date,
       ride_name_link,
       riders = riders_display,
-      distance_miles,
-      elevation_metres,
+      coastal_distance_miles,
+      coastal_elevation_metres,
       climb_per_mile,
       moving_seconds,
       moving_time
@@ -193,8 +193,16 @@ format_adventure_rankings <- function(rides_index) {
       adventure_end_date = max(start_date),
       days = dplyr::n_distinct(start_date),
       activities = dplyr::n_distinct(activity_id),
-      coastal_miles = sum(distance_miles, na.rm = TRUE),
-      elevation_metres = sum(elevation_metres, na.rm = TRUE),
+      overall_miles = sum(
+        overall_distance_miles[!duplicated(activity_id)],
+        na.rm = TRUE
+      ),
+      coastal_miles = sum(coastal_distance_miles, na.rm = TRUE),
+      overall_elevation_metres = sum(
+        overall_elevation_metres[!duplicated(activity_id)],
+        na.rm = TRUE
+      ),
+      coastal_elevation_metres = sum(coastal_elevation_metres, na.rm = TRUE),
       riders = format_rider_list(riders),
       .groups = "drop"
     ) |>

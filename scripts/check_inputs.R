@@ -5,6 +5,12 @@ library(lubridate)
 source("config.R")
 source("R/load.R")
 
+on.exit({
+  if (exists("con", inherits = TRUE) && DBI::dbIsValid(con)) {
+    DBI::dbDisconnect(con)
+  }
+}, add = TRUE)
+
 validate_coastal_activities(connection = con, check_db = TRUE)
 validate_ferries()
 
@@ -15,10 +21,10 @@ coastal_data <- load_coastal_data(
   export_rider_traces = FALSE
 )
 
-full_dataset <- coastal_data$full_dataset
+coastal_streams <- coastal_data$coastal_streams
 rides_index <- coastal_data$rides_index
 
-if (nrow(full_dataset) == 0) {
+if (nrow(coastal_streams) == 0) {
   stop("No coastal stream rows loaded.", call. = FALSE)
 }
 
@@ -32,7 +38,7 @@ if (nrow(rides_index) != nrow(coastal_activities)) {
 }
 
 missing_distance <- rides_index %>%
-  dplyr::filter(is.na(distance_whole_ride_miles))
+  dplyr::filter(is.na(overall_distance_miles))
 
 if (nrow(missing_distance) > 0) {
   stop(
@@ -46,5 +52,9 @@ if (nrow(missing_distance) > 0) {
 message("Input check passed.")
 message(stringr::str_glue("Activities: {dplyr::n_distinct(coastal_activities$activity_id)}"))
 message(stringr::str_glue("Ride segments: {nrow(coastal_activities)}"))
-message(stringr::str_glue("Stream rows after cropping: {nrow(full_dataset)}"))
+message(stringr::str_glue("Stream rows after cropping: {nrow(coastal_streams)}"))
 message(stringr::str_glue("Ride summary rows: {nrow(rides_index)}"))
+
+if (exists("con", inherits = TRUE) && DBI::dbIsValid(con)) {
+  DBI::dbDisconnect(con)
+}

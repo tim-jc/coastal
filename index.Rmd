@@ -19,9 +19,20 @@ rm(list=ls(all = TRUE))
 source("config.R")
 source("R/load.R")
 
+knitr::knit_hooks$set(
+  document = function(x) {
+    if (exists("con", inherits = TRUE) && DBI::dbIsValid(con)) {
+      DBI::dbDisconnect(con)
+    }
+
+    x
+  }
+)
+
 coastal_data <- load_coastal_data(export_rider_traces = TRUE)
 
-full_dataset <- coastal_data$full_dataset
+coastal_streams <- coastal_data$coastal_streams
+activity_streams <- coastal_data$activity_streams
 rides_index <- coastal_data$rides_index
 position_extremities <- coastal_data$position_extremities
 image_metadata <- coastal_data$image_metadata
@@ -45,16 +56,16 @@ Maps
 Row {data-height=120}
 -----------------------------------------------------------------------
 
-### Miles ridden
+### Coastal miles
 
 ```{r}
-valueBox(rides_index$distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#EDF0F1")
+valueBox(rides_index$coastal_distance_miles %>% sum() %>% floor(), icon = "fa-bicycle", color = "#EDF0F1")
 ```
 
-### Metres climbed
+### Coastal metres climbed
 
 ```{r}
-valueBox(rides_index$elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#EDF0F1")
+valueBox(rides_index$coastal_elevation_metres %>% sum() %>% floor(), icon = "fa-arrow-up", color = "#EDF0F1")
 ```
 
 ### Days ridden
@@ -73,16 +84,21 @@ valueBox(nrow(ferries), icon = "fa-ship", color = "#EDF0F1")
 Row {data-height=650}
 -----------------------------------------------------------------------
 
-### Overall progress
+### Coastal progress
 
 ```{r}
-draw_map("all", full_dataset, rides_index, image_metadata)
+draw_map("all", coastal_streams, rides_index, image_metadata)
 ```
 
-### Latest ride
+### Latest coastal section
 
 ```{r}
-draw_map("latest", full_dataset, rides_index, image_metadata)
+draw_map(
+  "latest",
+  coastal_streams,
+  rides_index,
+  image_metadata
+)
 ```
 
 Row {data-height=120}
@@ -128,32 +144,32 @@ valueBox(
 )
 ```
 
-### Coastal miles
+### Overall miles
 
 ```{r}
 valueBox(
-  floor(latest_adventure_summary$distance_miles),
+  floor(latest_adventure_summary$overall_distance_miles),
   icon = "fa-bicycle",
   color = "#EDF0F1"
 )
 ```
 
-### Metres climbed
+### Coastal miles
 
 ```{r}
 valueBox(
-  floor(latest_adventure_summary$elevation_metres),
-  icon = "fa-arrow-up",
+  floor(latest_adventure_summary$coastal_distance_miles),
+  icon = "fa-road",
   color = "#EDF0F1"
 )
 ```
 
-### Moving time
+### Coastal climb
 
 ```{r}
 valueBox(
-  format_duration_hours(latest_adventure_summary$moving_seconds),
-  icon = "fa-clock",
+  floor(latest_adventure_summary$coastal_elevation_metres),
+  icon = "fa-arrow-up",
   color = "#EDF0F1"
 )
 ```
@@ -164,7 +180,13 @@ Row {data-height=650}
 ### Latest adventure map
 
 ```{r}
-draw_map("latest", full_dataset, rides_index, image_metadata)
+draw_map(
+  "latest",
+  coastal_streams,
+  rides_index,
+  image_metadata,
+  activity_streams = activity_streams
+)
 ```
 
 ### Days
@@ -181,8 +203,10 @@ datatable(
     "Riders",
     "Total Distance (mi)",
     "Coastal Distance (mi)",
-    "Elevation (m)",
-    "Moving Time",
+    "Total Climb (m)",
+    "Coastal Climb (m)",
+    "Total Time",
+    "Coastal Time",
     "Percentage Coastal"
   ),
   rownames = FALSE,
@@ -192,7 +216,12 @@ datatable(
   )
 ) %>%
   formatRound(
-    c("distance_whole_ride_miles", "distance_miles", "elevation_metres"),
+    c(
+      "overall_distance_miles",
+      "coastal_distance_miles",
+      "overall_elevation_metres",
+      "coastal_elevation_metres"
+    ),
     digits = 1
   ) %>%
   formatPercentage("coastal_percentage", digits = 1)
@@ -219,7 +248,7 @@ Row {data-height=420}
 draw_cumulative_progress_plot(rides_index)
 ```
 
-### Distance / climb by year
+### Coastal distance / climb by year
 
 ```{r}
 draw_miles_climb_plot(rides_index)
@@ -228,22 +257,22 @@ draw_miles_climb_plot(rides_index)
 Row {data-height=430}
 -----------------------------------------------------------------------
 
-### Contributors
+### Coastal contributors
 
 ```{r}
 draw_rider_contribution_plot(rides_index)
 ```
 
-### Seasonality
+### Coastal seasonality
 
 ```{r}
 draw_monthly_activity_plot(rides_index)
 ```
 
-### Miles ridden by hour of day
+### Coastal miles by hour of day
 
 ```{r}
-draw_miles_by_hour_plot(full_dataset)
+draw_miles_by_hour_plot(coastal_streams)
 ```
 
 Rides
@@ -276,7 +305,7 @@ valueBox(
 
 ```{r}
 valueBox(
-  str_glue("{floor(longest_day_activity$distance_miles)} mi"),
+  str_glue("{round(longest_day_activity$coastal_distance_miles)} mi"),
   icon = "fa-road",
   color = "#EDF0F1",
   href = longest_day_activity$strava_link
@@ -288,7 +317,7 @@ valueBox(
 ```{r}
 valueBox(
   str_glue(
-    "{format(floor(biggest_climb_activity$elevation_metres), big.mark = ',')} m"
+    "{format(round(biggest_climb_activity$coastal_elevation_metres), big.mark = ',')} m"
   ),
   icon = "fa-arrow-up",
   color = "#EDF0F1",
@@ -312,9 +341,9 @@ datatable(
     "Adventures",
     "Ride Days",
     "Coastal Miles",
-    "Elevation (m)",
-    "Longest Day (mi)",
-    "Biggest Climb (m)"
+    "Coastal Climb (m)",
+    "Longest Coastal Day (mi)",
+    "Biggest Coastal Climb (m)"
   ),
   options = list(
     dom = "t",
@@ -324,7 +353,7 @@ datatable(
   formatRound(
     c(
       "coastal_miles",
-      "elevation_metres",
+      "coastal_elevation_metres",
       "longest_day_miles",
       "biggest_climb_metres"
     ),
@@ -346,8 +375,10 @@ datatable(
     "End Date",
     "Days",
     "Activities",
+    "Total Miles",
     "Coastal Miles",
-    "Elevation (m)",
+    "Total Climb (m)",
+    "Coastal Climb (m)",
     "Riders"
   ),
   options = list(
@@ -355,7 +386,15 @@ datatable(
     pageLength = nrow(adventure_rankings)
   )
 ) %>%
-  formatRound(c("coastal_miles", "elevation_metres"), digits = 1)
+  formatRound(
+    c(
+      "overall_miles",
+      "coastal_miles",
+      "overall_elevation_metres",
+      "coastal_elevation_metres"
+    ),
+    digits = 1
+  )
 ```
 
 ### Hardest coastal days
@@ -372,7 +411,7 @@ datatable(
     "Ride",
     "Riders",
     "Coastal Miles",
-    "Elevation (m)",
+    "Coastal Climb (m)",
     "Metres / Mile",
     "Moving Seconds",
     "Moving Time"
@@ -387,7 +426,7 @@ datatable(
   )
 ) %>%
   formatRound(
-    c("distance_miles", "elevation_metres", "climb_per_mile"),
+    c("coastal_distance_miles", "coastal_elevation_metres", "climb_per_mile"),
     digits = 1
   )
 ```
@@ -399,18 +438,35 @@ dt <- rides_index %>%
   mutate(ride_name_link = str_c("<a href = \"",strava_link,"\">",ride_name,"</a>"),
          ride_start_lbl = as_date(start_date_local),
          riders_display = map_chr(riders, format_rider_list),
-         distance_miles = if_else(distance_miles > distance_whole_ride_miles, distance_whole_ride_miles, distance_miles)) %>%
-  select(ride_name_link, ride_start_lbl, riders_display, distance_whole_ride_miles, distance_miles, elevation_metres, coastal_percentage)
+         coastal_distance_miles = if_else(coastal_distance_miles > overall_distance_miles, overall_distance_miles, coastal_distance_miles)) %>%
+  select(
+    ride_name_link,
+    ride_start_lbl,
+    riders_display,
+    overall_distance_miles,
+    coastal_distance_miles,
+    overall_elevation_metres,
+    coastal_elevation_metres,
+    coastal_percentage
+  )
 
 datatable(dt,
           escape = FALSE,
-          colnames =  c("Ride Name", "Ride Date", "Riders", "Total Distance (mi)", "Coastal Distance (mi)", "Elevation (m)", "Percentage Coastal"), 
+          colnames =  c("Ride Name", "Ride Date", "Riders", "Total Distance (mi)", "Coastal Distance (mi)", "Total Climb (m)", "Coastal Climb (m)", "Percentage Coastal"), 
           rownames = FALSE,
           extensions = 'Scroller', #'Buttons',
           options = list(dom = 'Bfrti',
                          scrollY = 350,
                          pageLength = nrow(rides_index),
                          searchHighlight = TRUE)) %>% 
-  formatRound(c("distance_whole_ride_miles", "distance_miles", "elevation_metres"), digits = 1) %>% 
+  formatRound(
+    c(
+      "overall_distance_miles",
+      "coastal_distance_miles",
+      "overall_elevation_metres",
+      "coastal_elevation_metres"
+    ),
+    digits = 1
+  ) %>% 
   formatPercentage("coastal_percentage", digits = 1)
 ```

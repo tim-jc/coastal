@@ -2,14 +2,14 @@ draw_xp_plot <- function(rides_index) {
   mile_equivalent_climb <- min(rides_index$dist_per_elev)
 
   rider_xp <- rides_index %>%
-    dplyr::select(riders, distance_miles, elevation_metres) %>%
+    dplyr::select(riders, coastal_distance_miles, coastal_elevation_metres) %>%
     dplyr::mutate(rider = stringr::str_split(riders, "\\|")) %>%
     tidyr::unnest(cols = "rider") %>%
     dplyr::mutate(rider = stringr::str_remove_all(rider, "\\(|\\)")) %>%
     dplyr::group_by(rider) %>%
     dplyr::summarise(
-      total_dist = sum(distance_miles),
-      total_elev = sum(elevation_metres),
+      total_dist = sum(coastal_distance_miles),
+      total_elev = sum(coastal_elevation_metres),
       dist_xp = total_dist * xp_unit,
       elev_xp = total_elev * mile_equivalent_climb * xp_unit,
       total_xp = dist_xp + elev_xp
@@ -111,8 +111,8 @@ draw_xp_plot <- function(rides_index) {
   return(xp_plot)
 }
 
-draw_miles_by_hour_plot <- function(full_dataset) {
-  mbh_plot <- full_dataset %>%
+draw_miles_by_hour_plot <- function(coastal_streams) {
+  mbh_plot <- coastal_streams %>%
     dplyr::mutate(
       hour_of_day = hour(time_of_day),
       hour_text = if_else(
@@ -128,13 +128,13 @@ draw_miles_by_hour_plot <- function(full_dataset) {
     dplyr::mutate(
       text_label = str_glue(
         "From: {hour_text}00 to {hour_text}59
-                                 Miles ridden: {round(dist_ridden_in_hr_mi, digits = 1)}"
+                                 Coastal miles: {round(dist_ridden_in_hr_mi, digits = 1)}"
       )
     ) %>%
     ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
     geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.2) +
     scale_x_continuous(breaks = seq(1, 24, 1)) +
-    labs(x = "\nHour of day", y = "Distance ridden /miles\n") +
+    labs(x = "\nHour of day", y = "Coastal miles\n") +
     theme_minimal() +
     theme(
       axis.text = element_text(colour = phiets_navy),
@@ -151,8 +151,8 @@ draw_miles_climb_plot <- function(rides_index) {
   dist_climb_yr <- rides_index %>%
     dplyr::group_by(yr) %>%
     dplyr::summarise(
-      tot_miles = sum(distance_miles) %>% round(0),
-      tot_elev = sum(elevation_metres) %>% round(0),
+      tot_miles = sum(coastal_distance_miles) %>% round(0),
+      tot_elev = sum(coastal_elevation_metres) %>% round(0),
       .groups = "drop"
     ) %>%
     dplyr::mutate(
@@ -167,11 +167,11 @@ draw_miles_climb_plot <- function(rides_index) {
     dplyr::mutate(
       metric_label = dplyr::case_when(
         metric == "tot_miles" ~ "Coastal miles",
-        metric == "elevation_scaled" ~ "Elevation (10m units)"
+        metric == "elevation_scaled" ~ "Coastal climb (10m units)"
       ),
       text_label = dplyr::case_when(
         metric == "tot_miles" ~ str_glue("{yr}\nCoastal miles: {value}"),
-        metric == "elevation_scaled" ~ str_glue("{yr}\nElevation: {tot_elev}m")
+        metric == "elevation_scaled" ~ str_glue("{yr}\nCoastal climb: {tot_elev}m")
       )
     )
 

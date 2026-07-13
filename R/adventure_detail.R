@@ -33,15 +33,35 @@ summarise_adventure <- function(adventure_rides, adventure_photos = NULL) {
   }
 
   riders <- format_rider_list(adventure_rides$riders)
+  unique_activities <- adventure_rides |>
+    dplyr::distinct(activity_id, .keep_all = TRUE)
 
   dplyr::tibble(
     title = adventure_title,
     date_range = format_adventure_date_range(adventure_rides),
     days = dplyr::n_distinct(adventure_rides$start_date),
     activities = dplyr::n_distinct(adventure_rides$activity_id),
-    distance_miles = sum(adventure_rides$distance_miles, na.rm = TRUE),
-    elevation_metres = sum(adventure_rides$elevation_metres, na.rm = TRUE),
-    moving_seconds = sum(
+    overall_distance_miles = sum(
+      unique_activities$overall_distance_miles,
+      na.rm = TRUE
+    ),
+    overall_moving_seconds = sum(
+      unique_activities$overall_moving_seconds,
+      na.rm = TRUE
+    ),
+    overall_elevation_metres = sum(
+      unique_activities$overall_elevation_metres,
+      na.rm = TRUE
+    ),
+    coastal_distance_miles = sum(
+      adventure_rides$coastal_distance_miles,
+      na.rm = TRUE
+    ),
+    coastal_elevation_metres = sum(
+      adventure_rides$coastal_elevation_metres,
+      na.rm = TRUE
+    ),
+    coastal_moving_seconds = sum(
       adventure_rides$finish_time - adventure_rides$start_time,
       na.rm = TRUE
     ),
@@ -72,21 +92,24 @@ format_adventure_day_table <- function(adventure_rides) {
       ),
       ride_date = as.Date(start_date_local),
       riders_display = purrr::map_chr(riders, format_rider_list),
-      moving_time = format_duration_hours(finish_time - start_time),
-      distance_miles = if_else(
-        distance_miles > distance_whole_ride_miles,
-        distance_whole_ride_miles,
-        distance_miles
+      overall_time = format_duration_hours(overall_moving_seconds),
+      coastal_time = format_duration_hours(finish_time - start_time),
+      coastal_distance_miles = if_else(
+        coastal_distance_miles > overall_distance_miles,
+        overall_distance_miles,
+        coastal_distance_miles
       )
     ) |>
     dplyr::select(
       ride_date,
       ride_name_link,
       riders = riders_display,
-      distance_whole_ride_miles,
-      distance_miles,
-      elevation_metres,
-      moving_time,
+      overall_distance_miles,
+      coastal_distance_miles,
+      overall_elevation_metres,
+      coastal_elevation_metres,
+      overall_time,
+      coastal_time,
       coastal_percentage
     )
 }

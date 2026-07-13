@@ -96,7 +96,11 @@ validate_coastal_activities <- function(
     cropped_counts <- activities %>%
       dplyr::mutate(segment_id = dplyr::row_number()) %>%
       dplyr::select(segment_id, activity_id, ride_start_time, ride_end_time) %>%
-      dplyr::inner_join(stream_times, by = "activity_id") %>%
+      dplyr::inner_join(
+        stream_times,
+        by = "activity_id",
+        relationship = "many-to-many"
+      ) %>%
       dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time) %>%
       dplyr::count(segment_id, name = "stream_rows")
 

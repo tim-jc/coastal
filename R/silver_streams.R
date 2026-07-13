@@ -36,6 +36,25 @@ get_coastal_rides <- function(connection = con, activities = coastal_activities)
     dplyr::collect()
 
   ride_streams %>%
-    dplyr::inner_join(activities, by = "activity_id") %>%
+    dplyr::inner_join(
+      activities,
+      by = "activity_id",
+      relationship = "many-to-many"
+    ) %>%
     dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time)
+}
+
+get_activity_rides <- function(connection = con, activities = coastal_activities) {
+  activity_ids <- activities$activity_id
+  activity_metadata <- activities %>%
+    dplyr::distinct(activity_id, .keep_all = TRUE)
+
+  silver_tbl("activity_streams", connection) %>%
+    dplyr::filter(activity_id %in% activity_ids) %>%
+    select_stream_columns() %>%
+    dplyr::collect() %>%
+    dplyr::inner_join(
+      activity_metadata,
+      by = "activity_id"
+    )
 }

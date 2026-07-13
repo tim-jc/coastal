@@ -1,5 +1,5 @@
-get_position_extremities <- function(full_dataset) {
-  full_dataset %>%
+get_position_extremities <- function(coastal_streams) {
+  coastal_streams %>%
     dplyr::select(lat, lng) %>%
     dplyr::mutate(extremity = dplyr::case_when(
       lat == max(lat) ~ "N",
