@@ -174,7 +174,7 @@ valueBox(
 )
 ```
 
-Row {data-height=650}
+Row {data-height=890}
 -----------------------------------------------------------------------
 
 ### Latest adventure map
@@ -194,9 +194,10 @@ draw_map(
 ```{r}
 latest_adventure_days <- format_adventure_day_table(latest_adventure)
 
-datatable(
+latest_adventure_days_table <- datatable(
   latest_adventure_days,
   escape = FALSE,
+  height = "330px",
   colnames = c(
     "Date",
     "Ride",
@@ -212,7 +213,10 @@ datatable(
   rownames = FALSE,
   options = list(
     dom = "t",
-    pageLength = nrow(latest_adventure_days)
+    paging = FALSE,
+    scrollY = "240px",
+    scrollCollapse = TRUE,
+    pageLength = 7
   )
 ) %>%
   formatRound(
@@ -225,15 +229,33 @@ datatable(
     digits = 1
   ) %>%
   formatPercentage("coastal_percentage", digits = 1)
-```
 
-Row {data-height=360}
------------------------------------------------------------------------
-
-### Photos
-
-```{r}
-render_adventure_photo_gallery(latest_adventure_photos)
+htmltools::tagList(
+  htmltools::tags$style(
+    "
+    .latest-adventure-side .datatables {
+      height: 330px !important;
+      min-height: 0 !important;
+    }
+    .latest-adventure-side .dataTables_scrollBody {
+      max-height: 240px !important;
+    }
+    .latest-adventure-side .adventure-photo-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    "
+  ),
+  htmltools::tags$div(
+    class = "latest-adventure-side",
+    latest_adventure_days_table,
+    htmltools::tags$h4(
+      "Photos",
+      class = "adventure-section-heading",
+      style = "margin-top: 10px;"
+    ),
+    render_adventure_photo_gallery(latest_adventure_photos)
+  )
+)
 ```
 
 Stats
