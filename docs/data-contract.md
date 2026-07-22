@@ -38,8 +38,8 @@ Required columns:
 
 Required by:
 
-- `load_activity_stream()`
-- `get_coastal_rides()`
+- `load_activity_stream(ride_id, connection)`
+- `get_coastal_rides(connection)`
 - `scripts/check_inputs.R`
 
 Required columns:

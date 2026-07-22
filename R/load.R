@@ -53,33 +53,8 @@ coastal_find_project_root <- function() {
 coastal_project_root <- coastal_find_project_root()
 options(coastal.project_root = coastal_project_root)
 
-if (!exists("silver_tbl", mode = "function", inherits = TRUE) || !exists("con", inherits = TRUE)) {
-  coastal_config <- file.path(coastal_project_root, "config.R")
-
-  if (!file.exists(coastal_config)) {
-    stop(
-      "Missing config.R. Create it from local credentials before sourcing R/load.R.",
-      call. = FALSE
-    )
-  }
-
-  source(coastal_config)
-}
-
-coastal_packages <- c(
-  "tidyverse",
-  "leaflet",
-  "leaflet.extras",
-  "plotly",
-  "lubridate",
-  "mapdata",
-  "stravR"
-)
-
-suppressPackageStartupMessages(
-  invisible(lapply(coastal_packages, library, character.only = TRUE))
-)
-
+source(file.path(coastal_project_root, "R", "dependencies.R"))
+source(file.path(coastal_project_root, "R", "database.R"))
 source(file.path(coastal_project_root, "R", "metadata.R"))
 source(file.path(coastal_project_root, "R", "validation.R"))
 source(file.path(coastal_project_root, "R", "silver_streams.R"))

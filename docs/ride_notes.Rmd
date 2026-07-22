@@ -1,7 +1,9 @@
 ```{r setup, include=FALSE}
 source(here::here("R", "load.R"))
+load_coastal_packages()
+con <- connect_coastal_database()
 
-rides <- load_coastal_data()$rides_index
+rides <- load_coastal_data(con)$rides_index
 
 rides <- rides |> mutate(details = str_glue("{ride_name} | {as_date(start_date_local)} | {str_replace_all(riders, '[|]', ', ')} | {strava_link}"))
 

@@ -38,54 +38,6 @@ parse_output_arg <- function(args, project_root) {
   file.path(output_dir, basename(output_arg))
 }
 
-is_publish_target <- function(output_path, project_root) {
-  identical(
-    normalizePath(output_path, mustWork = FALSE),
-    normalizePath(file.path(project_root, "index.html"), mustWork = FALSE)
-  )
-}
-
-run_git <- function(args) {
-  status <- system2("git", shQuote(args))
-
-  if (!identical(status, 0L)) {
-    stop(
-      paste("Git command failed:", paste(c("git", args), collapse = " ")),
-      call. = FALSE
-    )
-  }
-}
-
-publish_dashboard <- function(project_root, output_path) {
-  if (!is_publish_target(output_path, project_root)) {
-    message("Preview render only; skipping git publish.")
-    return(invisible(FALSE))
-  }
-
-  run_git(c("add", "--", "index.html"))
-
-  has_staged_changes <- !identical(
-    system2(
-      "git",
-      c("diff", "--cached", "--quiet", "--", "index.html"),
-      stdout = FALSE,
-      stderr = FALSE
-    ),
-    0L
-  )
-
-  if (!has_staged_changes) {
-    message("No rendered index.html changes to publish.")
-    return(invisible(FALSE))
-  }
-
-  run_git(c("commit", "-m", "Publish rendered dashboard"))
-  run_git("push")
-
-  message("Published rendered dashboard.")
-  invisible(TRUE)
-}
-
 is_valid_db_connection <- function(object) {
   tryCatch(
     DBI::dbIsValid(object),
@@ -156,4 +108,3 @@ rmarkdown::render(
 
 message("Dashboard render complete.")
 disconnect_render_connections(render_env)
-publish_dashboard(project_root, output_path)

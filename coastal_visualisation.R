@@ -1,21 +1,8 @@
-# libraries
-library(stravR)
-library(extrafont)
-library(tidyverse)
-library(DBI)
-library(leaflet)
-library(mapdata)
-library(cowplot)
-library(lubridate)
+source("R/load.R")
+load_coastal_packages(c(coastal_packages, "extrafont", "cowplot", "DBI"))
+con <- connect_coastal_database()
 
 loadfonts()
-
-# clear the memory
-rm(list=ls(all = TRUE))
-
-# source functions
-source("config.R")
-source("R/load.R")
 
 # Notes / resources -------------------------------------------------------
 
@@ -28,11 +15,12 @@ source("R/load.R")
 # Get data ----------------------------------------------------------------
 
 coastal_data <- load_coastal_data(
+  con,
   include_images = FALSE,
   include_position_extremities = FALSE
 )
 
-full_dataset <- coastal_data$full_dataset
+full_dataset <- coastal_data$activity_streams
 rides_index <- coastal_data$rides_index
 riders <- coastal_data$riders
 

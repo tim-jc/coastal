@@ -20,22 +20,36 @@ select_stream_columns <- function(streams) {
     )
 }
 
-load_activity_stream <- function(ride_id, connection = con) {
+load_activity_stream <- function(ride_id, connection) {
   silver_tbl("activity_streams", connection) %>%
     dplyr::filter(activity_id == !!bit64::as.integer64(ride_id)) %>%
     select_stream_columns() %>%
     dplyr::collect()
 }
 
-get_coastal_rides <- function(connection = con, activities = coastal_activities) {
-  activity_ids <- activities$activity_id
-
-  ride_streams <- silver_tbl("activity_streams", connection) %>%
+load_stream_records <- function(connection, activity_ids) {
+  silver_tbl("activity_streams", connection) %>%
     dplyr::filter(activity_id %in% activity_ids) %>%
     select_stream_columns() %>%
     dplyr::collect()
+}
 
-  ride_streams %>%
+load_activity_records <- function(connection, activity_ids) {
+  silver_tbl("activities", connection) %>%
+    dplyr::select(
+      activity_id,
+      start_date_local = start_datetime_local,
+      distance_metres
+    ) %>%
+    dplyr::filter(activity_id %in% activity_ids) %>%
+    dplyr::collect() %>%
+    dplyr::mutate(
+      strava_link = paste0("https://www.strava.com/activities/", activity_id)
+    )
+}
+
+build_coastal_rides <- function(stream_records, activities = coastal_activities) {
+  stream_records %>%
     dplyr::inner_join(
       activities,
       by = "activity_id",
@@ -44,17 +58,36 @@ get_coastal_rides <- function(connection = con, activities = coastal_activities)
     dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time)
 }
 
-get_activity_rides <- function(connection = con, activities = coastal_activities) {
-  activity_ids <- activities$activity_id
+build_activity_rides <- function(stream_records, activities = coastal_activities) {
   activity_metadata <- activities %>%
     dplyr::distinct(activity_id, .keep_all = TRUE)
 
-  silver_tbl("activity_streams", connection) %>%
-    dplyr::filter(activity_id %in% activity_ids) %>%
-    select_stream_columns() %>%
-    dplyr::collect() %>%
+  stream_records %>%
     dplyr::inner_join(
       activity_metadata,
       by = "activity_id"
     )
+}
+
+get_coastal_rides <- function(connection, activities = coastal_activities) {
+  activity_ids <- activities$activity_id
+  load_stream_records(connection, activity_ids) %>%
+    build_coastal_rides(activities)
+}
+
+get_activity_rides <- function(connection, activities = coastal_activities) {
+  activity_ids <- activities$activity_id
+  load_stream_records(connection, activity_ids) %>%
+    build_activity_rides(activities)
+}
+
+new_silver_data_source <- function(connection) {
+  list(
+    load_activities = function(activity_ids) {
+      load_activity_records(connection, activity_ids)
+    },
+    load_streams = function(activity_ids) {
+      load_stream_records(connection, activity_ids)
+    }
+  )
 }

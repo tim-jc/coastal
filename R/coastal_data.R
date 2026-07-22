@@ -1,27 +1,21 @@
-load_coastal_streams <- function(connection = con, activities = coastal_activities) {
-  activity_ids <- activities$activity_id
-
-  activity_list <- silver_tbl("activities", connection) |>
-    dplyr::mutate(
-      strava_link = paste0("https://www.strava.com/activities/", activity_id)
+enrich_activity_streams <- function(
+  ride_streams,
+  activity_records,
+  activities = coastal_activities,
+  coastal = FALSE
+) {
+  enriched <- ride_streams |>
+    dplyr::inner_join(
+      dplyr::select(activity_records, activity_id, start_date_local, strava_link),
+      by = "activity_id"
     ) |>
-    dplyr::select(
-      activity_id,
-      start_date_local = start_datetime_local,
-      strava_link
-    ) |>
-    dplyr::filter(activity_id %in% activity_ids) |>
-    dplyr::collect()
-
-  ride_streams <- get_coastal_rides(connection, activities) |>
-    dplyr::inner_join(activity_list, by = "activity_id") |>
     dplyr::mutate(
-      sort_time = if_else(ride_direction == "cw", -time_seconds, time_seconds),
-      ride_name = factor(ride_name, levels = activities$ride_name, ordered = T),
+      sort_time = dplyr::if_else(ride_direction == "cw", -time_seconds, time_seconds),
+      ride_name = factor(ride_name, levels = activities$ride_name, ordered = TRUE),
       start_date_local = as.POSIXct(start_date_local),
-      time_of_day = start_date_local + seconds(time_seconds),
+      time_of_day = start_date_local + lubridate::seconds(time_seconds),
       yr = lubridate::year(start_date_local),
-      marker_popup = str_c(
+      marker_popup = stringr::str_c(
         ride_name,
         "<br>",
         format(start_date_local, "%d-%b-%y"),
@@ -32,83 +26,63 @@ load_coastal_streams <- function(connection = con, activities = coastal_activiti
         strava_link,
         " target=\"_blank\">Strava"
       )
-    ) |>
-    arrange(ride_name, sort_time)
+    )
 
-  ride_streams <- ride_streams |>
-    dplyr::group_by(activity_id) |>
+  if (coastal) {
+    enriched <- enriched |>
+      dplyr::arrange(ride_name, sort_time) |>
+      dplyr::group_by(activity_id, coastal_segment_id)
+  } else {
+    enriched <- enriched |>
+      dplyr::arrange(activity_id, time_seconds) |>
+      dplyr::group_by(activity_id)
+  }
+
+  enriched |>
     dplyr::mutate(
-      prev_lng = lag(lng),
-      prev_lat = lag(lat),
-      prev_alt = lag(altitude),
+      prev_lng = dplyr::lag(lng),
+      prev_lat = dplyr::lag(lat),
+      prev_alt = dplyr::lag(altitude),
       dist_since_prev = geosphere::distHaversine(
         cbind(prev_lng, prev_lat),
         cbind(lng, lat)
       ),
-      climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)
+      climb_since_prev = dplyr::if_else(
+        altitude > prev_alt,
+        altitude - prev_alt,
+        0
+      )
     ) |>
-    ungroup()
+    dplyr::ungroup()
+}
 
-  return(ride_streams)
+load_coastal_streams <- function(connection, activities = coastal_activities) {
+  activity_ids <- activities$activity_id
+  activity_records <- load_activity_records(connection, activity_ids)
+  stream_records <- load_stream_records(connection, activity_ids)
+
+  stream_records |>
+    build_coastal_rides(activities) |>
+    enrich_activity_streams(activity_records, activities, coastal = TRUE)
 }
 
 load_activity_streams <- function(
-  connection = con,
+  connection,
   activities = coastal_activities
 ) {
   activity_ids <- activities$activity_id
+  activity_records <- load_activity_records(connection, activity_ids)
+  stream_records <- load_stream_records(connection, activity_ids)
 
-  activity_list <- silver_tbl("activities", connection) |>
-    dplyr::mutate(
-      strava_link = paste0("https://www.strava.com/activities/", activity_id)
-    ) |>
-    dplyr::select(
-      activity_id,
-      start_date_local = start_datetime_local,
-      strava_link
-    ) |>
-    dplyr::filter(activity_id %in% activity_ids) |>
-    dplyr::collect()
-
-  get_activity_rides(connection, activities) |>
-    dplyr::inner_join(activity_list, by = "activity_id") |>
-    dplyr::mutate(
-      sort_time = if_else(ride_direction == "cw", -time_seconds, time_seconds),
-      ride_name = factor(ride_name, levels = activities$ride_name, ordered = T),
-      start_date_local = as.POSIXct(start_date_local),
-      time_of_day = start_date_local + seconds(time_seconds),
-      yr = lubridate::year(start_date_local),
-      marker_popup = str_c(
-        ride_name,
-        "<br>",
-        format(start_date_local, "%d-%b-%y"),
-        "<br>",
-        riders_pretty,
-        "<br>",
-        "<a href=",
-        strava_link,
-        " target=\"_blank\">Strava"
-      )
-    ) |>
-    arrange(activity_id, time_seconds) |>
-    dplyr::group_by(activity_id) |>
-    dplyr::mutate(
-      prev_lng = lag(lng),
-      prev_lat = lag(lat),
-      prev_alt = lag(altitude),
-      dist_since_prev = geosphere::distHaversine(
-        cbind(prev_lng, prev_lat),
-        cbind(lng, lat)
-      ),
-      climb_since_prev = if_else(altitude > prev_alt, altitude - prev_alt, 0)
-    ) |>
-    ungroup()
+  stream_records |>
+    build_activity_rides(activities) |>
+    enrich_activity_streams(activity_records, activities)
 }
 
 create_summary <- function(
   coastal_streams,
   activity_streams,
-  connection = con,
+  activity_records,
   activity_ids = coastal_ids
 ) {
   df <- coastal_streams |>
@@ -151,13 +125,12 @@ create_summary <- function(
     ) |>
     dplyr::select(-c(ride_prev_day, is_new_adventure))
 
-  activity_distances <- silver_tbl("activities", connection) |>
+  activity_distances <- activity_records |>
     dplyr::mutate(
       overall_distance_miles = distance_metres * metres_to_miles
     ) |>
     dplyr::select(activity_id, overall_distance_miles) |>
-    dplyr::filter(activity_id %in% activity_ids) |>
-    dplyr::collect()
+    dplyr::filter(activity_id %in% activity_ids)
 
   activity_metrics <- activity_streams |>
     dplyr::group_by(activity_id) |>
@@ -190,14 +163,42 @@ create_summary <- function(
 }
 
 load_coastal_data <- function(
-  connection = con,
+  connection = NULL,
   activities = coastal_activities,
   ferries_data = ferries,
   validate_db = FALSE,
   include_images = TRUE,
   include_position_extremities = TRUE,
-  export_rider_traces = FALSE
+  export_rider_traces = FALSE,
+  data_source = NULL
 ) {
+  if (validate_db && is.null(connection)) {
+    stop("A database connection is required when validate_db is TRUE.", call. = FALSE)
+  }
+
+  if (is.null(data_source)) {
+    if (is.null(connection)) {
+      stop("Provide either connection or data_source.", call. = FALSE)
+    }
+
+    data_source <- new_silver_data_source(connection)
+  }
+
+  required_loaders <- c("load_activities", "load_streams")
+  missing_loaders <- required_loaders[!vapply(
+    required_loaders,
+    function(name) is.function(data_source[[name]]),
+    logical(1)
+  )]
+
+  if (length(missing_loaders) > 0) {
+    stop(
+      "data_source is missing loader functions: ",
+      paste(missing_loaders, collapse = ", "),
+      call. = FALSE
+    )
+  }
+
   validate_coastal_activities(
     activities,
     connection = connection,
@@ -205,12 +206,19 @@ load_coastal_data <- function(
   )
   validate_ferries(ferries_data, activities)
 
-  coastal_streams <- load_coastal_streams(connection, activities)
-  activity_streams <- load_activity_streams(connection, activities)
+  activity_ids <- activities$activity_id
+  activity_records <- data_source$load_activities(activity_ids)
+  stream_records <- data_source$load_streams(activity_ids)
+  coastal_streams <- stream_records |>
+    build_coastal_rides(activities) |>
+    enrich_activity_streams(activity_records, activities, coastal = TRUE)
+  activity_streams <- stream_records |>
+    build_activity_rides(activities) |>
+    enrich_activity_streams(activity_records, activities)
   rides_index <- create_summary(
     coastal_streams,
     activity_streams,
-    connection,
+    activity_records,
     activities$activity_id
   )
   rider_ids <- extract_riders(activities)

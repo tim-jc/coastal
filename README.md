@@ -25,6 +25,8 @@ Rscript scripts/check_inputs.R
 ## Project Layout
 
 - `R/load.R`: loads all project modules in dependency order.
+- `R/database.R`: reads database settings and creates explicit connections.
+- `R/dependencies.R`: checks and attaches runtime packages at entry points.
 - `R/metadata.R`: loads metadata and shared constants.
 - `R/validation.R`: validates ride and ferry metadata.
 - `R/silver_streams.R`: owns silver stream column selection and stream loading.
@@ -42,11 +44,17 @@ Use this in project entry points:
 source("R/load.R")
 ```
 
-`R/load.R` loads project packages and sources `config.R` automatically when `con` and `silver_tbl()` are not already loaded.
+`R/load.R` only sources project modules. Entry points explicitly load their runtime packages and create a database connection:
+
+```r
+source("R/load.R")
+load_coastal_packages()
+con <- connect_coastal_database()
+```
 
 ## Local Configuration
 
-`config.R` reads database settings from environment variables. Keep secrets in `.Renviron`, which is ignored by git. Start from `.Renviron.example`.
+`connect_coastal_database()` reads database settings from environment variables. Keep secrets in `.Renviron`, which is ignored by git. Start from `.Renviron.example`.
 
 Required variables:
 
@@ -72,7 +80,9 @@ Legacy `DB_*` variable names are still accepted as fallbacks.
 
 ## Publishing
 
-Run `Rscript scripts/render_dashboard.R` to render `index.Rmd` to root `index.html`. When root `index.html` changes, the script commits that file and pushes it to publish the dashboard.
+Run `scripts/render_and_publish.sh` to validate inputs, render `index.Rmd` to root `index.html`, then commit and push the generated dashboard. Each step must succeed before the next begins.
+
+For a render without publishing, run `Rscript scripts/render_dashboard.R`.
 
 Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
 
@@ -88,6 +98,12 @@ Check the R Markdown chunks:
 
 ```r
 Rscript -e "out <- knitr::purl('index.Rmd', output = tempfile(fileext = '.R'), quiet = TRUE); invisible(parse(file = out))"
+```
+
+Run the automated tests:
+
+```r
+Rscript tests/testthat.R
 ```
 
 ## More Documentation

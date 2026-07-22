@@ -66,7 +66,7 @@ xp_levels <- dplyr::tibble(
     500000
   )
 ) |>
-  dplyr::mutate(xp_level = seq_along(xp), next_xp = lead(xp))
+  dplyr::mutate(xp_level = seq_along(xp), next_xp = dplyr::lead(xp))
 
 extract_riders <- function(activities = coastal_activities) {
   activities |>

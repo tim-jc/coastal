@@ -1,23 +1,16 @@
 # ride explorer
 # use this script to add new rides to the coastal dataset
 
-# libraries
-library(tidyverse)
-library(leaflet)
-library(stravR)
-
-# clear the memory
-rm(list=ls(all = TRUE))
-
-source("config.R")
 source("R/load.R")
+load_coastal_packages()
+con <- connect_coastal_database()
 
 
 # Load ride ---------------------------------------------------------------
 
 ride_id <- 19088138409
 
-ride_data <- load_activity_stream(ride_id) %>%
+ride_data <- load_activity_stream(ride_id, con) %>%
   dplyr::rename(time = time_seconds)
 
 max(ride_data$time)

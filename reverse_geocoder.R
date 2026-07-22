@@ -4,17 +4,9 @@
 # so need to write out to SQLite DB so data isn't lost
 # Restarting R when the counter hits 200 to prevent a force quit
 
-# libraries
-library(tidyverse)
-library(leaflet)
-library(DBI)
-library(stravR)
-
-# clear the memory
-rm(list=ls(all = TRUE))
-
-source("config.R")
 source("R/load.R")
+load_coastal_packages(c(coastal_packages, "DBI"))
+con <- connect_coastal_database()
 
 # bing api key - these refresh annually. If one isn't working, try the other! Otherwise the photon API is unlimited, but a bit less detailed.
 # move these to a local config file too!
@@ -22,7 +14,7 @@ hca_account_key <- "AmmKMFzPTOsRpX1M8orYkCmkTA_A-0q9UB980GE16xIY0mQ0UYYmX_IX49Hs
 gmail_account_key <- "AvF_1ohpw9KtMUOazP0qqIY6-1MVT8YWyUQqQktYT-oPml7J-mjzL4mTyhedkIZQ" 
 
 # Get set of coded lat / lon and streams data from SQLite DB
-ride_streams <- get_coastal_rides()
+ride_streams <- get_coastal_rides(con)
 coded <- dbReadTable(con, "geocodes")
 
 # Find set of uncoded lat / lon

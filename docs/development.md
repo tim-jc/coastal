@@ -7,6 +7,8 @@ Project code is split by responsibility under `R/`.
 | File | Responsibility |
 | --- | --- |
 | `R/load.R` | sources all modules in dependency order |
+| `R/dependencies.R` | checks and attaches packages for executable entry points |
+| `R/database.R` | builds database configuration and explicit connections |
 | `R/metadata.R` | loads metadata and defines constants |
 | `R/validation.R` | validates coastal activity and ferry metadata |
 | `R/silver_streams.R` | loads and maps silver activity stream columns |
@@ -22,11 +24,11 @@ Project entry points should load:
 source("R/load.R")
 ```
 
-`R/load.R` loads project packages and sources `config.R` automatically when `con` and `silver_tbl()` are not already loaded. Existing scripts may still source `config.R` explicitly first.
+`R/load.R` has no database or package-attachment side effects. Executable entry points call `load_coastal_packages()` and `connect_coastal_database()` explicitly.
 
 ## Local Configuration
 
-`config.R` is untracked and reads environment variables from `.Renviron`.
+Database settings are read from `.Renviron` by `coastal_database_config()` in `R/database.R`.
 
 Use `.Renviron.example` as the template. Do not commit real credentials.
 
@@ -62,6 +64,12 @@ Rscript scripts/check_inputs.R
 ```
 
 The input check requires database access and should fail while silver `activity_streams` is empty.
+
+Run unit tests without database access:
+
+```r
+Rscript tests/testthat.R
+```
 
 ## Generated Files
 

@@ -35,7 +35,7 @@ Set `ride_id`, inspect the stream on the map, and choose the `ride_start_time` /
 The explorer uses the same silver stream loader as the dashboard:
 
 ```r
-load_activity_stream()
+load_activity_stream(ride_id, con)
 ```
 
 ## 3. Add Ferries
@@ -81,4 +81,16 @@ It may also regenerate rider trace PNGs under `docs/`.
 
 ## 6. Publish
 
-Commit generated dashboard output only after validation passes. Root `index.html` is the published dashboard artifact.
+After reviewing the generated output, run:
+
+```r
+Rscript scripts/publish_dashboard.R
+```
+
+This commits and pushes only root `index.html`. Publish only after validation passes.
+
+To validate, render, and publish in one command instead, run:
+
+```sh
+scripts/render_and_publish.sh
+```

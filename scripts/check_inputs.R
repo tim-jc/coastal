@@ -1,9 +1,6 @@
-library(tidyverse)
-library(DBI)
-library(lubridate)
-
-source("config.R")
 source("R/load.R")
+load_coastal_packages(c(coastal_packages, "DBI"))
+con <- connect_coastal_database()
 
 on.exit({
   if (exists("con", inherits = TRUE) && DBI::dbIsValid(con)) {
@@ -15,6 +12,7 @@ validate_coastal_activities(connection = con, check_db = TRUE)
 validate_ferries()
 
 coastal_data <- load_coastal_data(
+  con,
   validate_db = TRUE,
   include_images = FALSE,
   include_position_extremities = FALSE,
