@@ -59,15 +59,14 @@ con <- connect_coastal_database()
 Required variables:
 
 ```text
-CYCLING_PLATFORM_DB_NAME=cycling_platform_silver
 CYCLING_PLATFORM_SILVER_SCHEMA=cycling_platform_silver
-CYCLING_PLATFORM_DB_HOST=192.168.1.94
-CYCLING_PLATFORM_DB_PORT=3306
-CYCLING_PLATFORM_DB_USER=your_user
-CYCLING_PLATFORM_DB_PASSWORD=your_password
+MARIADB_HOST=cycling-prod.local
+MARIADB_PORT=3306
+MARIADB_USER=your_user
+MARIADB_PASSWORD=your_password
 ```
 
-Legacy `DB_*` variable names are still accepted as fallbacks.
+`CYCLING_PLATFORM_SILVER_SCHEMA` selects the schema used by every silver table query. The connection itself does not require a default database name.
 
 ## Add A Ride
 

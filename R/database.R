@@ -13,32 +13,21 @@ coastal_env_value <- function(name, fallback = NULL, required = TRUE) {
 }
 
 coastal_database_config <- function() {
-  database_name <- coastal_env_value(
-    "CYCLING_PLATFORM_DB_NAME",
-    fallback = coastal_env_value("DB_NAME", required = FALSE)
-  )
-
   list(
-    dbname = database_name,
     schema = coastal_env_value(
-      "CYCLING_PLATFORM_SILVER_SCHEMA",
-      fallback = database_name
+      "CYCLING_PLATFORM_SILVER_SCHEMA"
     ),
     host = coastal_env_value(
-      "CYCLING_PLATFORM_DB_HOST",
-      fallback = coastal_env_value("DB_HOST", required = FALSE)
+      "MARIADB_HOST"
     ),
     port = as.integer(coastal_env_value(
-      "CYCLING_PLATFORM_DB_PORT",
-      fallback = coastal_env_value("DB_PORT", required = FALSE)
+      "MARIADB_PORT"
     )),
-    user = coastal_env_value(
-      "CYCLING_PLATFORM_DB_USER",
-      fallback = coastal_env_value("DB_USER", required = FALSE)
+    username = coastal_env_value(
+      "MARIADB_USER"
     ),
     password = coastal_env_value(
-      "CYCLING_PLATFORM_DB_PASSWORD",
-      fallback = coastal_env_value("DB_PASSWORD", required = FALSE)
+      "MARIADB_PASSWORD"
     )
   )
 }
@@ -51,10 +40,9 @@ connect_coastal_database <- function(config = coastal_database_config()) {
 
   connection <- DBI::dbConnect(
     RMariaDB::MariaDB(),
-    dbname = config$dbname,
     host = config$host,
     port = config$port,
-    user = config$user,
+    username = config$username,
     password = config$password
   )
   attr(connection, "coastal.silver_schema") <- config$schema

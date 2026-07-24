@@ -32,6 +32,11 @@ Database settings are read from `.Renviron` by `coastal_database_config()` in `R
 
 Use `.Renviron.example` as the template. Do not commit real credentials.
 
+Coastal uses the shared `MARIADB_HOST`, `MARIADB_PORT`, `MARIADB_USER`, and
+`MARIADB_PASSWORD` connection variables. `CYCLING_PLATFORM_SILVER_SCHEMA`
+selects the schema containing the silver tables; no database-name variable or
+legacy `DB_*` fallback is used.
+
 ## Metadata Files
 
 The hand-maintained project data lives in:

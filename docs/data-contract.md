@@ -16,6 +16,10 @@ The schema can be overridden locally with:
 CYCLING_PLATFORM_SILVER_SCHEMA
 ```
 
+MariaDB connectivity uses `MARIADB_HOST`, `MARIADB_PORT`, `MARIADB_USER`, and
+`MARIADB_PASSWORD`. Queries are schema-qualified, so Coastal does not set a
+default database name.
+
 ## Tables
 
 ### `activities`
