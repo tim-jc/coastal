@@ -20,6 +20,7 @@ Rscript scripts/check_inputs.R
 - `ride_explorer.R`: inspects one activity stream to determine coastal crop windows.
 - `scripts/check_inputs.R`: validates local metadata against the silver tables.
 - `coastal_visualisation.R`: creates static rider visualisations.
+- `R/rider_visualisation.R`: builds and exports testable rider poster plots.
 - `reverse_geocoder.R`: supports postcode/location enrichment.
 
 ## Project Layout
@@ -84,6 +85,10 @@ Run `scripts/render_and_publish.sh` to validate inputs, render `index.Rmd` to ro
 For a render without publishing, run `Rscript scripts/render_dashboard.R`.
 
 Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
+
+## Rider Visualisations
+
+Run `Rscript coastal_visualisation.R` to create one coastal-only poster per rider. Outputs are written to `outputs/visualisations/`; interactive route previewing is disabled when run with `Rscript`.
 
 ## Static Checks
 

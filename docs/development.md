@@ -13,6 +13,7 @@ Project code is split by responsibility under `R/`.
 | `R/validation.R` | validates coastal activity and ferry metadata |
 | `R/silver_streams.R` | loads and maps silver activity stream columns |
 | `R/coastal_data.R` | builds the core dataset and summaries |
+| `R/rider_visualisation.R` | filters, plots, and exports rider posters |
 | `R/geo_images.R` | handles geocoded extremities and image metadata |
 | `R/maps.R` | renders leaflet maps and rider trace PNGs |
 | `R/plots.R` | renders dashboard plots |
@@ -82,6 +83,6 @@ Generated files include:
 
 - `index.html`
 - rider PNGs under `docs/`
-- print/export image outputs such as `coastal_vis_*.png`
+- rider poster outputs under `outputs/visualisations/`
 
 Review generated diffs before committing them.
