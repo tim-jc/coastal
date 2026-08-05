@@ -9,12 +9,25 @@ rider_visualisation_defaults <- list(
   dpi = 300
 )
 
-available_font_family <- function(preferred = c("Avenir", "Arial", "sans")) {
-  if (!requireNamespace("systemfonts", quietly = TRUE)) {
-    return(tail(preferred, 1))
-  }
-
-  installed <- unique(systemfonts::system_fonts()$family)
+available_font_family <- function(
+  preferred = c("Avenir", "Arial", "sans"),
+  font_provider = NULL
+) {
+  installed <- tryCatch(
+    suppressWarnings({
+      if (!is.null(font_provider)) {
+        font_provider()
+      } else if (requireNamespace("extrafont", quietly = TRUE)) {
+        extrafont::fonts()
+      } else if (requireNamespace("systemfonts", quietly = TRUE)) {
+        systemfonts::system_fonts()$family
+      } else {
+        character()
+      }
+    }),
+    error = function(error) character()
+  )
+  installed <- unique(as.character(installed))
   match <- preferred[preferred %in% installed]
   if (length(match) > 0) match[[1]] else tail(preferred, 1)
 }

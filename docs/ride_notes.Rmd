@@ -219,3 +219,15 @@ Next morning we were up early for the morning ferry to Ullapool. Delayed arrival
 ## `r rides$details[rides$activity_id == 19088138409]`
 What started as an idea to get some climbing in ahead of a trip to the mountains to watch the Tour de France became a plan to ride through some big welsh hills to the coast and tick off the small section of coastline left unridden following Schalk’s big crash. 
 Very early start out of Euston to get the train to Chester. Lovely day through the hills and on to the coast. My rear derailleur failed and left me spinning in high cadence for half the ride. Picked up the route shortly before the crash site and then an uneventful ride along the coast back to Chester for the train home.
+
+## Placeholder - Mull take 2
+Some text
+
+## Placeholder - Skye Day 1
+Some text
+
+## Placeholder - Skye Day 2
+Some text
+
+## Placeholder - Isle of Man
+Some text

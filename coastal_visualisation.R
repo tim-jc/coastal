@@ -6,6 +6,8 @@ main <- function(
 ) {
   load_coastal_packages(c(coastal_packages, "extrafont", "cowplot", "DBI"))
   suppressWarnings(try(extrafont::loadfonts(quiet = TRUE), silent = TRUE))
+  font_family <- available_font_family()
+  symbol_font_family <- available_font_family(c("Apple Symbols", font_family))
 
   con <- connect_coastal_database()
   on.exit({
@@ -42,7 +44,9 @@ main <- function(
       rider,
       coastal_streams,
       rides_index,
-      uk_outline_map
+      uk_outline_map,
+      font_family = font_family,
+      symbol_font_family = symbol_font_family
     )
     output_file <- export_rider_visualisation(plot, rider, output_dir)
     if (is.null(output_file)) NA_character_ else output_file

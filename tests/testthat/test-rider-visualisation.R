@@ -9,6 +9,15 @@ test_that("rider filtering matches complete pipe-delimited values", {
   expect_equal(result$value, c(1L, 2L))
 })
 
+test_that("font selection falls back when enumeration fails", {
+  broken_provider <- function() stop("font enumeration failed")
+
+  expect_identical(
+    available_font_family(c("Avenir", "sans"), broken_provider),
+    "sans"
+  )
+})
+
 test_that("yearly rider summaries tolerate missing metrics", {
   rider_index <- dplyr::tibble(
     yr = c(2025, 2025, 2026),
