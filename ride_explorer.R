@@ -8,7 +8,7 @@ con <- connect_coastal_database()
 
 # Load ride ---------------------------------------------------------------
 
-ride_id <- 19088138409
+ride_id <- 19881072524
 
 ride_data <- load_activity_stream(ride_id, con) %>%
   dplyr::rename(time = time_seconds)
@@ -21,10 +21,10 @@ max(ride_data$time)
 # Adjust time filter to crop ride to correct size. Add start and end time
 # values to data/coastal_activities.R
 
-leaflet() %>% 
-  addTiles() %>% 
+leaflet() %>%
+  addTiles() %>%
   add_track(
-    ride_data %>% filter(time >= 29643, time <= 29645),
+    ride_data %>% filter(time >= 7900, time <= 7930),
     track_colour = "blue"
   )
 
