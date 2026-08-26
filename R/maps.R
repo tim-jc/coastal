@@ -1,3 +1,27 @@
+carto_basemap_api_key <- function() {
+  api_key <- Sys.getenv("CARTO_BASEMAP_API_KEY", unset = "")
+
+  if (!nzchar(api_key)) {
+    stop(
+      paste(
+        "CARTO raster basemaps require CARTO_BASEMAP_API_KEY.",
+        "Configure it in the runtime environment before rendering a CARTO-backed map."
+      ),
+      call. = FALSE
+    )
+  }
+
+  api_key
+}
+
+carto_basemap_tile_url <- function() {
+  paste0(
+    "https://{s}.basemaps.cartocdn.com/",
+    "rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key=",
+    utils::URLencode(carto_basemap_api_key(), reserved = TRUE)
+  )
+}
+
 draw_map <- function(
   map_type,
   coastal_streams,
@@ -8,7 +32,7 @@ draw_map <- function(
 ) {
   map <- leaflet() %>%
     addTiles(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}.png',
+      carto_basemap_tile_url(),
       attribution = paste(
         '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
         '&copy; <a href="https://cartodb.com/attributions">CartoDB</a>'

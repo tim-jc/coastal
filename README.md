@@ -65,9 +65,12 @@ MARIADB_HOST=cycling-prod.local
 MARIADB_PORT=3306
 MARIADB_USER=your_user
 MARIADB_PASSWORD=your_password
+CARTO_BASEMAP_API_KEY=<your key>
 ```
 
 `CYCLING_PLATFORM_SILVER_SCHEMA` selects the schema used by every silver table query. The connection itself does not require a default database name.
+`CARTO_BASEMAP_API_KEY` authenticates CARTO raster basemaps and intentionally
+uses the same environment-variable name as `cycling-analytics`.
 
 ## Add A Ride
 
