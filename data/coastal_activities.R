@@ -16,6 +16,7 @@ coastal_activities <- dplyr::tribble(
     7742970954 , "carlisle"       , "newton stewart" , "cw"            , "TC|SB|WR|ML"           ,              476 ,          30851 ,
     6193006840 , "seascale"       , "carlisle"       , "cw"            , "TC|SB|WR"              ,                0 ,          26200 ,
     6188924719 , "lancaster"      , "seascale"       , "cw"            , "TC|SB|WR"              ,               40 ,          42273 ,
+   20437241121 , "douglas"        , "douglas"        , "acw"           , "TC|WR|TS|ML"           ,                0 ,          35785 ,
     6184233328 , "chester"        , "lancaster"      , "cw"            , "TC|SB|WR"              ,             3959 ,          43595 ,
    19088138409 , "kinmel bay"     , "chester"        , "cw"            , "TC|TS|(WR)|(ML)"       ,            20250 ,          29643 ,
    11622261830 , "glan-yr-afon"   , "kinmel bay"     , "cw"            , "TC|SB|WR|TS|ML"        ,              220 ,          18414 ,

@@ -220,14 +220,10 @@ Next morning we were up early for the morning ferry to Ullapool. Delayed arrival
 What started as an idea to get some climbing in ahead of a trip to the mountains to watch the Tour de France became a plan to ride through some big welsh hills to the coast and tick off the small section of coastline left unridden following Schalk’s big crash. 
 Very early start out of Euston to get the train to Chester. Lovely day through the hills and on to the coast. My rear derailleur failed and left me spinning in high cadence for half the ride. Picked up the route shortly before the crash site and then an uneventful ride along the coast back to Chester for the train home.
 
-## Placeholder - Mull take 2
-Some text
+## `r rides$details[rides$activity_id == 19867101376]`
+A Scotland adventure with the intention of re-riding Mull, pushing the coastal trace outwards a bit with some gravel, and then taking in Skye went south because I was ill. Night train disaster again - this time breaking down in Milton Keynes and getting towed back to Euston - meant we had to take an early morning train to Glasgow next morning. 
 
-## Placeholder - Skye Day 1
-Some text
-
-## Placeholder - Skye Day 2
-Some text
+The illness required major shortening of each day and a lot of miles lost as a result. In the end, the only new coastal miles was a run along the SW of Skye from the Aird of Sleat to Broadford.
 
 ## Placeholder - Isle of Man
 Some text
