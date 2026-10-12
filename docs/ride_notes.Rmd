@@ -225,5 +225,9 @@ A Scotland adventure with the intention of re-riding Mull, pushing the coastal t
 
 The illness required major shortening of each day and a lot of miles lost as a result. In the end, the only new coastal miles was a run along the SW of Skye from the Aird of Sleat to Broadford.
 
-## Placeholder - Isle of Man
-Some text
+## `r rides$details[rides$activity_id == 20437241121]`
+A rare treat - chance to do a coastal ride on road bikes without luggage. We flew to the IoM on the Friday evening, landing in horribly windy and rainy conditions and checked into our hotel in Douglas. Forecast for pleasant weather the next day was spot on and we woke up to flat sea, clear skies, and a beautful sunrise.
+
+Headed off anti-clockwise on one of the most special coastal days there has been. Coffee in Ramsey, then off to the Point of Ayre for photos at the lighthouse. We saw the english coast as we headed north, and then scotland from the point of ayre. Then south down the west coast (faint sights of northern ireland) before a nice lunch in peel. THen the big climb of the day followed by an absolutely stunning descent down to point erin. In the bike shop to straighten skipp's derailleur hanger then back 10 mins later when wyndy's chain snapped.
+
+Down to the calf of man (beautiful) before going past the airport and then a stunning finale along marine drive into douglas as the sun began to dip. What a day.

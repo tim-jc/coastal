@@ -31,6 +31,27 @@ test_that("yearly rider summaries tolerate missing metrics", {
   expect_equal(result$total_climb, c(150, 0))
 })
 
+test_that("metric plots reserve space below the units label", {
+  summary_data <- dplyr::tibble(
+    yr = as.character(2016:2026),
+    total_miles = seq(100, 1100, by = 100),
+    total_climb = seq(1000, 11000, by = 1000)
+  )
+
+  plot <- create_metric_plot(
+    summary_data,
+    total_miles,
+    "miles",
+    font_family = "sans",
+    symbol_font_family = "sans"
+  )
+  built <- ggplot2::ggplot_build(plot)
+  discrete_range <- built$layout$panel_params[[1]]$y.range
+
+  expect_lt(discrete_range[[1]], 0)
+  expect_s3_class(plot, "ggplot")
+})
+
 test_that("empty rider data is rejected or skipped clearly", {
   expect_error(
     summarise_rider_years(dplyr::tibble()),

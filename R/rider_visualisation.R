@@ -115,16 +115,23 @@ create_metric_plot <- function(
   }
 
   max_value <- as.integer(max(values, na.rm = TRUE))
+  label_row <- ".metric-label"
   plot_data <- dplyr::bind_rows(
     summary_data,
     dplyr::tibble(
-      yr = "",
+      yr = label_row,
       total_miles = NA_real_,
       total_climb = NA_real_
     )
-  )
+  ) |>
+    dplyr::mutate(
+      yr = factor(
+        yr,
+        levels = c(label_row, sort(unique(summary_data$yr)))
+      )
+    )
   label_data <- dplyr::tibble(
-    yr = "",
+    yr = factor(label_row, levels = levels(plot_data$yr)),
     value = max_value,
     label = stringr::str_c(max_value, "\n", unit)
   )
@@ -154,6 +161,12 @@ create_metric_plot <- function(
       family = font_family,
       size = 6,
       hjust = 1
+    ) +
+    ggplot2::scale_x_discrete(
+      labels = function(value) {
+        ifelse(value == label_row, "", value)
+      },
+      expand = ggplot2::expansion(add = c(1.35, 0.5))
     ) +
     ggplot2::coord_flip() +
     ggplot2::expand_limits(y = c(50, max(50, max_value * 1.1))) +
