@@ -86,3 +86,7 @@ Generated files include:
 - rider poster outputs under `outputs/visualisations/`
 
 Review generated diffs before committing them.
+
+## Website Image Optimization
+
+Run `Rscript scripts/optimize_images.R` to report photographs above the default 2,560-pixel limit. Add `--apply` to resize and recompress them at JPEG quality 82. The script processes only top-level JPEG photographs in `docs/images/`, leaving generated `rider_maps/` untouched, and verifies that GPS coordinates, capture date, and description metadata survive across the complete batch before replacing any originals.

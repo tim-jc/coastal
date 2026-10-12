@@ -93,6 +93,17 @@ Do not publish while `scripts/check_inputs.R` fails. In the current state, publi
 
 Run `Rscript coastal_visualisation.R` to create one coastal-only poster per rider. Outputs are written to `outputs/visualisations/`; interactive route previewing is disabled when run with `Rscript`.
 
+## Website Images
+
+Website photographs under `docs/images/` can be audited and optimized with:
+
+```sh
+Rscript scripts/optimize_images.R
+Rscript scripts/optimize_images.R --apply
+```
+
+The default maximum dimension is 2,560 pixels at JPEG quality 82. The script excludes generated rider maps, preserves GPS/date/description metadata, and validates the complete batch before replacing any originals. Use `--max-dimension=` and `--quality=` to override the defaults.
+
 ## Static Checks
 
 Parse the project R files without querying the database:
