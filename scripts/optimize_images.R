@@ -91,19 +91,18 @@ metadata_preserved <- function(before, after) {
 replace_file <- function(source, replacement) {
   backup <- tempfile(paste0(".", basename(source), "-backup-"), tmpdir = dirname(source))
 
-  if (!file.rename(source, backup)) {
+  if (!file.copy(source, backup, overwrite = TRUE)) {
     stop("Could not back up image before replacement: ", source, call. = FALSE)
   }
 
   installed <- FALSE
   on.exit({
     if (!installed) {
-      if (file.exists(source)) unlink(source, force = TRUE)
-      file.rename(backup, source)
+      file.copy(backup, source, overwrite = TRUE)
     }
   }, add = TRUE)
 
-  if (!file.rename(replacement, source)) {
+  if (!file.copy(replacement, source, overwrite = TRUE)) {
     stop("Could not install optimized image: ", source, call. = FALSE)
   }
 
@@ -169,71 +168,90 @@ if (!nzchar(Sys.which("sips"))) {
   stop("This script currently requires macOS 'sips' for metadata-safe resizing.", call. = FALSE)
 }
 
-project_root <- find_project_root()
-config <- parse_args(commandArgs(trailingOnly = TRUE), project_root)
+main <- function() {
+  project_root <- find_project_root()
+  config <- parse_args(commandArgs(trailingOnly = TRUE), project_root)
 
-if (!dir.exists(config$input_dir)) {
-  stop("Image directory does not exist: ", config$input_dir, call. = FALSE)
-}
-if (is.na(config$max_dimension) || config$max_dimension < 640) {
-  stop("--max-dimension must be an integer of at least 640.", call. = FALSE)
-}
-if (is.na(config$quality) || config$quality < 1 || config$quality > 100) {
-  stop("--quality must be an integer from 1 to 100.", call. = FALSE)
-}
+  if (!dir.exists(config$input_dir)) {
+    stop("Image directory does not exist: ", config$input_dir, call. = FALSE)
+  }
+  if (is.na(config$max_dimension) || config$max_dimension < 640) {
+    stop("--max-dimension must be an integer of at least 640.", call. = FALSE)
+  }
+  if (is.na(config$quality) || config$quality < 1 || config$quality > 100) {
+    stop("--quality must be an integer from 1 to 100.", call. = FALSE)
+  }
 
-images <- list.files(
-  config$input_dir,
-  pattern = "[.](jpe?g)$",
-  full.names = TRUE,
-  recursive = FALSE,
-  ignore.case = TRUE
-)
-
-dimensions <- lapply(images, read_image_info)
-needs_resize <- vapply(
-  dimensions,
-  function(info) max(as.numeric(info$ImageWidth[[1]]), as.numeric(info$ImageHeight[[1]])) > config$max_dimension,
-  logical(1)
-)
-candidates <- images[needs_resize]
-
-message("Images found: ", length(images))
-message("Images above ", config$max_dimension, " px: ", length(candidates))
-message("Current size: ", format(sum(file.info(images)$size), big.mark = ","), " bytes")
-
-if (!config$apply) {
-  message("Dry run only. Re-run with --apply to optimize these images.")
-  quit(save = "no", status = 0L)
-}
-
-staging_dir <- tempfile(".coastal-image-optimization-", tmpdir = config$input_dir)
-dir.create(staging_dir)
-on.exit(unlink(staging_dir, recursive = TRUE, force = TRUE), add = TRUE)
-
-message("Preparing and validating all candidates before replacing originals...")
-results <- lapply(candidates, function(path) {
-  result <- prepare_optimized_image(
-    path,
-    config$max_dimension,
-    config$quality,
-    staging_dir
+  images <- list.files(
+    config$input_dir,
+    pattern = "[.](jpe?g)$",
+    full.names = TRUE,
+    recursive = FALSE,
+    ignore.case = TRUE
   )
-  message(
-    basename(path), ": ", result$status, " (",
-    format(result$before, big.mark = ","), " -> ",
-    format(result$after, big.mark = ","), " bytes)"
+
+  conflict_images <- images[
+    grepl(" [0-9]+[.](jpe?g)$", basename(images), ignore.case = TRUE)
+  ]
+  if (length(conflict_images) > 0) {
+    stop(
+      paste0(
+        "Conflict-style duplicate images found (for example, '",
+        basename(conflict_images[[1]]),
+        "'). Resolve them before optimizing."
+      ),
+      call. = FALSE
+    )
+  }
+
+  dimensions <- lapply(images, read_image_info)
+  needs_resize <- vapply(
+    dimensions,
+    function(info) max(as.numeric(info$ImageWidth[[1]]), as.numeric(info$ImageHeight[[1]])) > config$max_dimension,
+    logical(1)
   )
-  result
-})
+  candidates <- images[needs_resize]
 
-prepared <- Filter(function(result) identical(result$status, "prepared"), results)
-invisible(lapply(prepared, function(result) {
-  replace_file(result$source, result$candidate)
-}))
+  message("Images found: ", length(images))
+  message("Images above ", config$max_dimension, " px: ", length(candidates))
+  message("Current size: ", format(sum(file.info(images)$size), big.mark = ","), " bytes")
 
-bytes_before <- sum(vapply(results, `[[`, numeric(1), "before"))
-bytes_after <- sum(vapply(results, `[[`, numeric(1), "after"))
-message("Optimization complete.")
-message("Candidate size: ", format(bytes_before, big.mark = ","), " -> ", format(bytes_after, big.mark = ","), " bytes")
-message("Saved: ", format(bytes_before - bytes_after, big.mark = ","), " bytes")
+  if (!config$apply) {
+    message("Dry run only. Re-run with --apply to optimize these images.")
+    return(invisible(NULL))
+  }
+
+  staging_dir <- tempfile(".coastal-image-optimization-", tmpdir = config$input_dir)
+  dir.create(staging_dir)
+  on.exit(unlink(staging_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+  message("Preparing and validating all candidates before replacing originals...")
+  results <- lapply(candidates, function(path) {
+    result <- prepare_optimized_image(
+      path,
+      config$max_dimension,
+      config$quality,
+      staging_dir
+    )
+    message(
+      basename(path), ": ", result$status, " (",
+      format(result$before, big.mark = ","), " -> ",
+      format(result$after, big.mark = ","), " bytes)"
+    )
+    result
+  })
+
+  prepared <- Filter(function(result) identical(result$status, "prepared"), results)
+  invisible(lapply(prepared, function(result) {
+    replace_file(result$source, result$candidate)
+  }))
+
+  bytes_before <- sum(vapply(results, `[[`, numeric(1), "before"))
+  bytes_after <- sum(vapply(results, `[[`, numeric(1), "after"))
+  message("Optimization complete.")
+  message("Candidate size: ", format(bytes_before, big.mark = ","), " -> ", format(bytes_after, big.mark = ","), " bytes")
+  message("Saved: ", format(bytes_before - bytes_after, big.mark = ","), " bytes")
+  invisible(results)
+}
+
+main()

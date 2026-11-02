@@ -11,6 +11,39 @@ get_position_extremities <- function(coastal_streams) {
     tidygeocoder::reverse_geocode(long = lng, lat = lat, full_results = T)
 }
 
+build_image_marker_popup <- function(image_source, image_description = NA_character_) {
+  caption <- if (
+    length(image_description) == 1 &&
+      !is.na(image_description) &&
+      nzchar(trimws(image_description))
+  ) {
+    image_description
+  } else {
+    "Coastal photograph"
+  }
+
+  as.character(
+    htmltools::tags$div(
+      class = "coastal-photo-popup",
+      htmltools::tags$a(
+        href = image_source,
+        target = "_blank",
+        rel = "noopener noreferrer",
+        htmltools::tags$img(
+          src = image_source,
+          alt = caption,
+          loading = "lazy",
+          decoding = "async"
+        )
+      ),
+      htmltools::tags$div(
+        caption,
+        class = "coastal-photo-caption"
+      )
+    )
+  )
+}
+
 get_image_metadata <- function() {
   images_dir <- file.path(coastal_project_root, "docs", "images")
   image_files <- list.files(
@@ -21,6 +54,9 @@ get_image_metadata <- function() {
     ignore.case = TRUE
   )
   image_files <- image_files[!grepl("(^|/)rider_maps/", image_files)]
+  image_files <- image_files[
+    !grepl(" [0-9]+[.](jpe?g|png)$", basename(image_files), ignore.case = TRUE)
+  ]
 
   if (length(image_files) == 0) {
     return(
@@ -54,10 +90,10 @@ get_image_metadata <- function() {
       image_date = str_sub(DateTimeOriginal, 1, 10) %>% ymd(),
       image_source = str_c(docs_folder_path, "images/", FileName),
       image_description = coalesce(ImageDescription, Description, `Caption-Abstract`),
-      marker_popup = str_c(
-        "<a href=\"", image_source, "\" target=\"_blank\">",
-        "<img src=\"", image_source, "\" style=\"width:230px;height:300px;object-fit:cover;\"><br>",
-        image_description
+      marker_popup = purrr::map2_chr(
+        image_source,
+        image_description,
+        build_image_marker_popup
       )
     ) %>%
     dplyr::filter(!is.na(GPSLatitude), !is.na(GPSLongitude))

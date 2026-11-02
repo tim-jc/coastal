@@ -49,6 +49,24 @@ move_path <- function(from, to) {
   }
 }
 
+move_directory_contents <- function(from, to) {
+  if (!dir.exists(to)) dir.create(to, recursive = TRUE)
+  entries <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+
+  for (entry in entries) {
+    move_path(entry, file.path(to, basename(entry)))
+  }
+
+  invisible(to)
+}
+
+clear_directory <- function(path) {
+  if (!dir.exists(path)) return(invisible(path))
+  entries <- list.files(path, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+  if (length(entries) > 0) unlink(entries, recursive = TRUE, force = TRUE)
+  invisible(path)
+}
+
 install_rendered_dashboard <- function(staged_html, output_path) {
   staged_dependencies <- dependency_path_for(staged_html)
   output_dependencies <- dependency_path_for(output_path)
@@ -82,23 +100,28 @@ install_rendered_dashboard <- function(staged_html, output_path) {
   }
 
   if (had_dependencies) {
-    move_path(output_dependencies, old_dependencies)
+    dir.create(old_dependencies)
+    move_directory_contents(output_dependencies, old_dependencies)
+  } else {
+    dir.create(output_dependencies)
   }
 
   installed <- FALSE
   on.exit({
     if (!installed) {
       if (file.exists(output_path)) unlink(output_path, force = TRUE)
-      if (dir.exists(output_dependencies)) unlink(output_dependencies, recursive = TRUE, force = TRUE)
+      clear_directory(output_dependencies)
       if (had_html && file.exists(old_html)) file.rename(old_html, output_path)
       if (had_dependencies && dir.exists(old_dependencies)) {
-        file.rename(old_dependencies, output_dependencies)
+        move_directory_contents(old_dependencies, output_dependencies)
+      } else if (dir.exists(output_dependencies)) {
+        unlink(output_dependencies, recursive = TRUE, force = TRUE)
       }
     }
   }, add = TRUE)
 
   move_path(staged_html, output_path)
-  move_path(staged_dependencies, output_dependencies)
+  move_directory_contents(staged_dependencies, output_dependencies)
   installed <- TRUE
   invisible(output_path)
 }
@@ -144,39 +167,39 @@ disconnect_render_connections <- function(render_env) {
   invisible(TRUE)
 }
 
-if (!requireNamespace("rmarkdown", quietly = TRUE)) {
-  stop("Package 'rmarkdown' is required to render the dashboard.", call. = FALSE)
+main <- function() {
+  if (!requireNamespace("rmarkdown", quietly = TRUE)) {
+    stop("Package 'rmarkdown' is required to render the dashboard.", call. = FALSE)
+  }
+
+  args <- commandArgs(trailingOnly = TRUE)
+  project_root <- find_project_root()
+  output_path <- parse_output_arg(args, project_root)
+  output_dir <- dirname(output_path)
+
+  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  setwd(project_root)
+
+  message("Rendering index.Rmd")
+  message("Output: ", output_path)
+
+  staging_dir <- tempfile(".coastal-render-", tmpdir = output_dir)
+  dir.create(staging_dir)
+  on.exit(unlink(staging_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  staged_output <- file.path(staging_dir, basename(output_path))
+
+  render_env <- new.env(parent = globalenv())
+  on.exit(disconnect_render_connections(render_env), add = TRUE)
+
+  rmarkdown::render(
+    input = file.path(project_root, "index.Rmd"),
+    output_file = staged_output,
+    envir = render_env
+  )
+
+  install_rendered_dashboard(staged_output, output_path)
+  message("Dashboard render complete.")
+  disconnect_render_connections(render_env)
 }
 
-args <- commandArgs(trailingOnly = TRUE)
-project_root <- find_project_root()
-output_path <- parse_output_arg(args, project_root)
-output_dir <- dirname(output_path)
-
-if (!dir.exists(output_dir)) {
-  dir.create(output_dir, recursive = TRUE)
-}
-
-setwd(project_root)
-
-message("Rendering index.Rmd")
-message("Output: ", output_path)
-
-staging_dir <- tempfile(".coastal-render-", tmpdir = output_dir)
-dir.create(staging_dir)
-on.exit(unlink(staging_dir, recursive = TRUE, force = TRUE), add = TRUE)
-staged_output <- file.path(staging_dir, basename(output_path))
-
-render_env <- new.env(parent = globalenv())
-on.exit(disconnect_render_connections(render_env), add = TRUE)
-
-rmarkdown::render(
-  input = file.path(project_root, "index.Rmd"),
-  output_file = staged_output,
-  envir = render_env
-)
-
-install_rendered_dashboard(staged_output, output_path)
-
-message("Dashboard render complete.")
-disconnect_render_connections(render_env)
+main()

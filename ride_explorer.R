@@ -8,7 +8,7 @@ con <- connect_coastal_database()
 
 # Load ride ---------------------------------------------------------------
 
-ride_id <- 19881072524
+ride_id <- 15562928333
 
 ride_data <- load_activity_stream(ride_id, con) %>%
   dplyr::rename(time = time_seconds)
@@ -24,9 +24,8 @@ max(ride_data$time)
 leaflet() %>%
   addTiles() %>%
   add_track(
-    ride_data %>% filter(time >= 7900, time <= 7930),
+    ride_data %>% filter(time >= 10200, time <= 10600),
     track_colour = "blue"
   )
-
 
 ride_data %>% filter(time >= 27000) %>% pull(time) %>% min()
