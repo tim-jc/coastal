@@ -1,7 +1,5 @@
 test_that("coastal rides are cropped without re-querying", {
   activities <- make_test_activities()
-  activities$ride_start_time <- 999
-  activities$ride_end_time <- 1000
   activities$ride_start_sample_index <- 2L
   activities$ride_end_sample_index <- 2L
 

@@ -297,6 +297,17 @@ main <- function() {
   source(file.path(project_root, "R", "load.R"))
   load_coastal_packages(c(coastal_packages, "DBI"))
 
+  if (!all(c("ride_start_time", "ride_end_time") %in% names(coastal_activities))) {
+    stop(
+      paste(
+        "The timestamp-to-index migration is complete and the legacy boundaries",
+        "are no longer present in coastal_activities.R. Run this historical audit",
+        "against a pre-migration revision if it is needed again."
+      ),
+      call. = FALSE
+    )
+  }
+
   connection <- connect_coastal_database()
   on.exit({
     if (DBI::dbIsValid(connection)) DBI::dbDisconnect(connection)

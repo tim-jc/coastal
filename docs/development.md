@@ -39,9 +39,8 @@ selects the schema containing the silver tables; no database-name variable or
 legacy `DB_*` fallback is used.
 
 Coastal section boundaries use the canonical one-based Silver `sample_index`.
-Both start and end indices are inclusive. Legacy timestamp boundaries remain in
-the section metadata temporarily for rollback evidence, but stream trimming does
-not use them.
+Both start and end indices are inclusive. Timestamp boundaries are not stored or
+used for stream trimming.
 
 ## Metadata Files
 
