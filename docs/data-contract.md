@@ -71,7 +71,7 @@ Required columns:
 
 - every `activity_id` in `data/coastal_activities.R` exists in silver `activities`;
 - every `activity_id` has rows in silver `activity_streams`;
-- every coastal crop window returns at least one stream row;
+- every inclusive sample-index crop window returns at least one stream row;
 - every ride summary has whole-ride distance from silver `activities`;
 - ferry markers reference known coastal activity IDs.
 

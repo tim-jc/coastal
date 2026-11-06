@@ -17,10 +17,12 @@ Add the segment in geographic order with:
 - `to`
 - `ride_direction`: `cw` or `acw`
 - `riders`: pipe-delimited initials, for example `TC|SB|WR`
-- `ride_start_time`
-- `ride_end_time`
+- `ride_start_sample_index`
+- `ride_end_sample_index`
 
 Riders in parentheses, for example `(SB)`, represent similar rides that count for XP-style summaries.
+
+The legacy `ride_start_time` and `ride_end_time` values are temporarily retained on migrated rows as rollback evidence. They are neither validated nor used to trim streams. New sections should use `NA_integer_` for these legacy fields during the transition.
 
 ## 2. Find Crop Windows
 
@@ -30,13 +32,30 @@ Use:
 ride_explorer.R
 ```
 
-Set `ride_id`, inspect the stream on the map, and choose the `ride_start_time` / `ride_end_time` values to crop to the coastal segment.
+Set `ride_id`, inspect the stream on the map, and choose the inclusive `ride_start_sample_index` / `ride_end_sample_index` values that identify the coastal segment. `time_seconds` is displayed for context but is not a boundary identifier.
 
 The explorer uses the same silver stream loader as the dashboard:
 
 ```r
 load_activity_stream(ride_id, con)
 ```
+
+## Boundary Migration Audit
+
+Before replacing timestamp crop windows with Silver sample-index boundaries, run the read-only audit:
+
+```sh
+Rscript scripts/audit_boundary_migration.R
+```
+
+To retain a local CSV report, provide an explicit output path:
+
+```sh
+Rscript scripts/audit_boundary_migration.R \
+  --output=outputs/audits/coastal_boundary_migration.csv
+```
+
+The audit queries canonical Silver streams but performs no database writes and does not modify `data/coastal_activities.R`. It classifies every configured section as `EXACT_MATCH`, `REQUIRES_REVIEW`, or `UNRESOLVED`.
 
 ## 3. Add Ferries
 

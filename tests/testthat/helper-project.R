@@ -10,6 +10,8 @@ make_test_activities <- function() {
     riders = "TC|SB",
     ride_start_time = 0,
     ride_end_time = 20,
+    ride_start_sample_index = 1L,
+    ride_end_sample_index = 3L,
     ride_name = "Start -> Finish",
     riders_pretty = "TC, SB",
     coastal_segment_id = 1L

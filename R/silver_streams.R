@@ -55,7 +55,10 @@ build_coastal_rides <- function(stream_records, activities = coastal_activities)
       by = "activity_id",
       relationship = "many-to-many"
     ) %>%
-    dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time)
+    dplyr::filter(
+      sample_index >= ride_start_sample_index,
+      sample_index <= ride_end_sample_index
+    )
 }
 
 build_activity_rides <- function(stream_records, activities = coastal_activities) {

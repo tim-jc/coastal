@@ -5,11 +5,11 @@ test_that("valid coastal metadata is accepted", {
 
 test_that("invalid crop windows are rejected", {
   activities <- make_test_activities()
-  activities$ride_start_time <- 30
+  activities$ride_start_sample_index <- 4L
 
   expect_error(
     validate_coastal_activities(activities, check_db = FALSE),
-    "invalid crop windows"
+    "invalid sample-index crop windows"
   )
 })
 

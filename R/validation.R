@@ -5,7 +5,8 @@ validate_coastal_activities <- function(
 ) {
   required_columns <- c(
     "activity_id", "from", "to", "ride_direction", "riders",
-    "ride_start_time", "ride_end_time", "ride_name", "riders_pretty"
+    "ride_start_sample_index", "ride_end_sample_index",
+    "ride_name", "riders_pretty"
   )
   errors <- character()
   missing_columns <- setdiff(required_columns, names(activities))
@@ -25,15 +26,23 @@ validate_coastal_activities <- function(
     invalid_direction <- activities %>%
       dplyr::filter(!ride_direction %in% c("cw", "acw"))
 
-    invalid_time_window <- activities %>%
+    invalid_sample_window <- activities %>%
       dplyr::filter(
-        is.na(ride_start_time) | is.na(ride_end_time) |
-          ride_start_time < 0 | ride_end_time < 0 |
-          ride_start_time > ride_end_time
+        is.na(ride_start_sample_index) | is.na(ride_end_sample_index) |
+          ride_start_sample_index < 1 | ride_end_sample_index < 1 |
+          ride_start_sample_index > ride_end_sample_index |
+          ride_start_sample_index != as.integer(ride_start_sample_index) |
+          ride_end_sample_index != as.integer(ride_end_sample_index)
       )
 
     duplicated_segments <- activities %>%
-      dplyr::count(activity_id, from, to, ride_start_time, ride_end_time) %>%
+      dplyr::count(
+        activity_id,
+        from,
+        to,
+        ride_start_sample_index,
+        ride_end_sample_index
+      ) %>%
       dplyr::filter(n > 1)
 
     if (any(is.na(activities$activity_id))) {
@@ -48,8 +57,8 @@ validate_coastal_activities <- function(
       errors <- c(errors, stringr::str_glue("{nrow(invalid_direction)} rows have invalid ride_direction values."))
     }
 
-    if (nrow(invalid_time_window) > 0) {
-      errors <- c(errors, stringr::str_glue("{nrow(invalid_time_window)} rows have invalid crop windows."))
+    if (nrow(invalid_sample_window) > 0) {
+      errors <- c(errors, stringr::str_glue("{nrow(invalid_sample_window)} rows have invalid sample-index crop windows."))
     }
 
     if (nrow(duplicated_segments) > 0) {
@@ -77,14 +86,14 @@ validate_coastal_activities <- function(
       ))
     }
 
-    stream_times <- silver_tbl("activity_streams", connection) %>%
-      dplyr::select(activity_id, time_seconds) %>%
+    stream_samples <- silver_tbl("activity_streams", connection) %>%
+      dplyr::select(activity_id, sample_index) %>%
       dplyr::filter(activity_id %in% activity_ids) %>%
       dplyr::collect()
 
     missing_streams <- setdiff(
       as.character(activity_ids),
-      as.character(unique(stream_times$activity_id))
+      as.character(unique(stream_samples$activity_id))
     )
 
     if (length(missing_streams) > 0) {
@@ -95,13 +104,21 @@ validate_coastal_activities <- function(
 
     cropped_counts <- activities %>%
       dplyr::mutate(segment_id = dplyr::row_number()) %>%
-      dplyr::select(segment_id, activity_id, ride_start_time, ride_end_time) %>%
+      dplyr::select(
+        segment_id,
+        activity_id,
+        ride_start_sample_index,
+        ride_end_sample_index
+      ) %>%
       dplyr::inner_join(
-        stream_times,
+        stream_samples,
         by = "activity_id",
         relationship = "many-to-many"
       ) %>%
-      dplyr::filter(time_seconds >= ride_start_time, time_seconds <= ride_end_time) %>%
+      dplyr::filter(
+        sample_index >= ride_start_sample_index,
+        sample_index <= ride_end_sample_index
+      ) %>%
       dplyr::count(segment_id, name = "stream_rows")
 
     missing_cropped_segments <- setdiff(seq_len(nrow(activities)), cropped_counts$segment_id)

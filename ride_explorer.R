@@ -10,22 +10,24 @@ con <- connect_coastal_database()
 
 ride_id <- 15562928333
 
-ride_data <- load_activity_stream(ride_id, con) %>%
-  dplyr::rename(time = time_seconds)
+ride_data <- load_activity_stream(ride_id, con)
 
-max(ride_data$time)
+range(ride_data$sample_index)
 
 
 # Draw track, and adjust --------------------------------------------------
 
-# Adjust time filter to crop ride to correct size. Add start and end time
-# values to data/coastal_activities.R
+# Adjust the sample-index filter to crop the ride to the correct section. Add
+# the inclusive start and end sample indices to data/coastal_activities.R.
+# Keep time_seconds visible as contextual information only.
 
 leaflet() %>%
   addTiles() %>%
   add_track(
-    ride_data %>% filter(time >= 10200, time <= 10600),
+    ride_data %>% filter(sample_index >= 1000, sample_index <= 1100),
     track_colour = "blue"
   )
 
-ride_data %>% filter(time >= 27000) %>% pull(time) %>% min()
+ride_data %>%
+  filter(sample_index >= 1000, sample_index <= 1100) %>%
+  select(sample_index, time_seconds, latitude, longitude)

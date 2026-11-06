@@ -75,7 +75,7 @@ uses the same environment-variable name as `cycling-analytics`.
 ## Add A Ride
 
 1. Add the ride segment to `data/coastal_activities.R` in geographic order.
-2. Use `ride_explorer.R` to inspect the silver activity stream and choose `ride_start_time` / `ride_end_time`.
+2. Use `ride_explorer.R` to inspect the Silver activity stream and choose inclusive `ride_start_sample_index` / `ride_end_sample_index` boundaries.
 3. Add ferry markers to `data/ferries.R` if relevant.
 4. Run `Rscript scripts/check_inputs.R`.
 5. Run `Rscript scripts/render_dashboard.R`.

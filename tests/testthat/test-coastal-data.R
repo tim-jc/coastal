@@ -1,12 +1,24 @@
 test_that("coastal rides are cropped without re-querying", {
   activities <- make_test_activities()
-  activities$ride_start_time <- 5
-  activities$ride_end_time <- 15
+  activities$ride_start_time <- 999
+  activities$ride_end_time <- 1000
+  activities$ride_start_sample_index <- 2L
+  activities$ride_end_sample_index <- 2L
 
   result <- build_coastal_rides(make_test_streams(), activities)
 
   expect_equal(result$time_seconds, 10)
   expect_equal(result$coastal_segment_id, 1L)
+})
+
+test_that("sample-index crop boundaries are inclusive", {
+  activities <- make_test_activities()
+  activities$ride_start_sample_index <- 1L
+  activities$ride_end_sample_index <- 2L
+
+  result <- build_coastal_rides(make_test_streams(), activities)
+
+  expect_equal(result$sample_index, 1:2)
 })
 
 test_that("load_coastal_data calls each data-source loader once", {
