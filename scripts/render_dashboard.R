@@ -49,6 +49,20 @@ move_path <- function(from, to) {
   }
 }
 
+replace_file <- function(from, to) {
+  # Keep the canonical file present until its replacement is ready. This avoids
+  # cloud-sync clients treating the render as a delete/recreate conflict and
+  # restoring the previous dashboard as, for example, "index 2.html".
+  if (file.rename(from, to)) return(invisible(to))
+
+  if (!file.copy(from, to, overwrite = TRUE)) {
+    stop("Could not replace rendered artifact at ", to, call. = FALSE)
+  }
+
+  unlink(from, force = TRUE)
+  invisible(to)
+}
+
 move_directory_contents <- function(from, to) {
   if (!dir.exists(to)) dir.create(to, recursive = TRUE)
   entries <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
@@ -96,7 +110,9 @@ install_rendered_dashboard <- function(staged_html, output_path) {
   had_dependencies <- dir.exists(output_dependencies)
 
   if (had_html) {
-    move_path(output_path, old_html)
+    if (!file.copy(output_path, old_html, overwrite = TRUE)) {
+      stop("Could not back up existing dashboard at ", output_path, call. = FALSE)
+    }
   }
 
   if (had_dependencies) {
@@ -111,7 +127,9 @@ install_rendered_dashboard <- function(staged_html, output_path) {
     if (!installed) {
       if (file.exists(output_path)) unlink(output_path, force = TRUE)
       clear_directory(output_dependencies)
-      if (had_html && file.exists(old_html)) file.rename(old_html, output_path)
+      if (had_html && file.exists(old_html)) {
+        file.copy(old_html, output_path, overwrite = TRUE)
+      }
       if (had_dependencies && dir.exists(old_dependencies)) {
         move_directory_contents(old_dependencies, output_dependencies)
       } else if (dir.exists(output_dependencies)) {
@@ -120,7 +138,7 @@ install_rendered_dashboard <- function(staged_html, output_path) {
     }
   }, add = TRUE)
 
-  move_path(staged_html, output_path)
+  replace_file(staged_html, output_path)
   move_directory_contents(staged_dependencies, output_dependencies)
   installed <- TRUE
   invisible(output_path)
