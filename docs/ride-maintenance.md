@@ -30,10 +30,13 @@ Use:
 ride_explorer.R
 ```
 
-Set `ride_id`, `start_sample_index`, `end_sample_index`, and `context_samples` in the selection-settings block. The script validates and orders the Silver stream, closes its database connection after loading, and creates:
+Start by setting `ride_id` and leaving both boundary values as `NA_integer_`. The script validates and orders the Silver stream, closes its database connection after loading, reports the complete sample range, and opens `overview_map` with regularly spaced sample markers.
+
+After identifying approximate boundaries, set both `start_sample_index` and `end_sample_index` and rerun. Never set only one boundary. Selection mode creates:
 
 - `crop_map`: the complete activity in grey with the candidate Coastal section highlighted;
-- `sample_map`: labelled observations around both boundaries;
+- `start_context_map`: a small labelled window around the start boundary;
+- `end_context_map`: a small labelled window around the end boundary;
 - `endpoint_samples`: the boundary indices, timestamps, coordinates, distance and altitude.
 
 Copy the inclusive start/end indices into `ride_start_sample_index` and `ride_end_sample_index`. `time_seconds` is displayed for context but is not a boundary identifier.
