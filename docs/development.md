@@ -58,7 +58,7 @@ These files are tracked because they are part of the app logic, not generated da
 Parse R files:
 
 ```r
-Rscript -e "files <- c(list.files('R', full.names = TRUE), 'scripts/check_inputs.R', 'ride_explorer.R', 'coastal_visualisation.R', 'reverse_geocoder.R'); invisible(lapply(files, parse))"
+Rscript -e "files <- c(list.files('R', full.names = TRUE), 'scripts/check_inputs.R', 'coastal_visualisation.R', 'reverse_geocoder.R'); invisible(lapply(files, parse))"
 ```
 
 Parse R Markdown chunks:

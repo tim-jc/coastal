@@ -2,7 +2,18 @@
 
 This is the workflow for adding or updating a coastal ride segment.
 
-## 1. Add Metadata
+## 1. Discover Boundaries
+
+Open the standalone Activity Inspector from the sibling `cycling-analytics` repository. Launch and usage instructions are in its [Activity Inspector guide](https://github.com/tim-jc/cycling-analytics/blob/main/docs/activity-inspector.md).
+
+1. Load the relevant Strava activity ID.
+2. Inspect the full route and select the coastal section.
+3. Refine the canonical start and end sample indices.
+4. Copy the inclusive boundaries.
+
+The Activity Inspector is read-only: it helps discover boundaries but does not update Coastal. `cycling-platform` owns the canonical Silver activity and stream data.
+
+## 2. Update Coastal Metadata
 
 Edit:
 
@@ -22,30 +33,7 @@ Add the segment in geographic order with:
 
 Riders in parentheses, for example `(SB)`, represent similar rides that count for XP-style summaries.
 
-## 2. Find Crop Windows
-
-Use:
-
-```r
-ride_explorer.R
-```
-
-Start by setting `ride_id` and leaving both boundary values as `NA_integer_`. The script validates and orders the Silver stream, closes its database connection after loading, reports the complete sample range, and opens `overview_map` with regularly spaced sample markers.
-
-After identifying approximate boundaries, set both `start_sample_index` and `end_sample_index` and rerun. Never set only one boundary. Selection mode creates:
-
-- `crop_map`: the complete activity in grey with the candidate Coastal section highlighted;
-- `start_context_map`: a small labelled window around the start boundary;
-- `end_context_map`: a small labelled window around the end boundary;
-- `endpoint_samples`: the boundary indices, timestamps, coordinates, distance and altitude.
-
-Copy the inclusive start/end indices into `ride_start_sample_index` and `ride_end_sample_index`. `time_seconds` is displayed for context but is not a boundary identifier.
-
-The explorer uses the same silver stream loader as the dashboard:
-
-```r
-load_activity_stream(ride_id, con)
-```
+Add the segment manually in geographic order using the boundaries copied from the Activity Inspector. Coastal's `data/coastal_activities.R` is the authoritative source for section boundaries and its calculations and published outputs consume those definitions. Sample-index boundaries are inclusive; timestamps are not boundary identifiers.
 
 ## 3. Add Ferries
 

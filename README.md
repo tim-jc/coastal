@@ -17,7 +17,6 @@ Rscript scripts/check_inputs.R
 ## Entry Points
 
 - `index.Rmd`: renders the flexdashboard and writes root `index.html`.
-- `ride_explorer.R`: inspects one activity stream to determine coastal crop windows.
 - `scripts/check_inputs.R`: validates local metadata against the silver tables.
 - `coastal_visualisation.R`: creates static rider visualisations.
 - `R/rider_visualisation.R`: builds and exports testable rider poster plots.
@@ -74,12 +73,15 @@ uses the same environment-variable name as `cycling-analytics`.
 
 ## Add A Ride
 
-1. Add the ride segment to `data/coastal_activities.R` in geographic order.
-2. Use `ride_explorer.R` to inspect the Silver activity stream and choose inclusive `ride_start_sample_index` / `ride_end_sample_index` boundaries.
-3. Add ferry markers to `data/ferries.R` if relevant.
-4. Run `Rscript scripts/check_inputs.R`.
-5. Run `Rscript scripts/render_dashboard.R`.
-6. Review and commit any source changes separately.
+1. Open the standalone Activity Inspector from `cycling-analytics` and load the relevant Strava activity ID.
+2. Inspect the full route, select the coastal section, refine the canonical start/end sample indices, and copy the inclusive boundaries. See the [Activity Inspector guide](https://github.com/tim-jc/cycling-analytics/blob/main/docs/activity-inspector.md) for launch and usage instructions.
+3. Manually add the ride segment and copied boundaries to `data/coastal_activities.R` in geographic order.
+4. Add ferry markers to `data/ferries.R` if relevant.
+5. Run `Rscript scripts/check_inputs.R`.
+6. Run `Rscript scripts/render_dashboard.R`.
+7. Review and commit any source changes separately.
+
+The Activity Inspector is a read-only discovery tool. Coastal owns the authoritative boundary definitions and downstream calculations, while `cycling-platform` owns the canonical Silver activity and stream data.
 
 ## Publishing
 
@@ -109,7 +111,7 @@ The default maximum dimension is 2,560 pixels at JPEG quality 82. The script exc
 Parse the project R files without querying the database:
 
 ```r
-Rscript -e "files <- c(list.files('R', full.names = TRUE), 'scripts/check_inputs.R', 'ride_explorer.R', 'coastal_visualisation.R', 'reverse_geocoder.R'); invisible(lapply(files, parse))"
+Rscript -e "files <- c(list.files('R', full.names = TRUE), 'scripts/check_inputs.R', 'coastal_visualisation.R', 'reverse_geocoder.R'); invisible(lapply(files, parse))"
 ```
 
 Check the R Markdown chunks:
