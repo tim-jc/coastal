@@ -15,6 +15,32 @@ file_inode <- function(path) {
   as.integer(system2("stat", c("-f", "%i", path), stdout = TRUE))
 }
 
+test_that("rendered favicon declaration identifies its PNG correctly", {
+  render <- load_render_dashboard_functions()
+  html <- withr::local_tempfile(fileext = ".html")
+  writeLines(
+    c(
+      "<head>",
+      '<link rel="icon" href="assets/identity/favicon-32.png">',
+      "</head>"
+    ),
+    html
+  )
+
+  render$fix_png_favicon_declaration(html)
+  rendered_html <- paste(readLines(html), collapse = "\n")
+
+  expect_match(
+    rendered_html,
+    '<link rel="icon" type="image/png" sizes="32x32" href="assets/identity/favicon-32.png">',
+    fixed = TRUE
+  )
+  expect_length(
+    stringr::str_extract_all(rendered_html, '<link rel="icon"')[[1]],
+    1L
+  )
+})
+
 test_that("render installation updates canonical artifacts in place", {
   skip_if_not(identical(Sys.info()[["sysname"]], "Darwin"))
   render <- load_render_dashboard_functions()

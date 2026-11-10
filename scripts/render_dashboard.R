@@ -43,6 +43,31 @@ dependency_path_for <- function(html_path) {
   file.path(dirname(html_path), paste0(stem, "_files"))
 }
 
+fix_png_favicon_declaration <- function(
+  html_path,
+  favicon_path = "assets/identity/favicon-32.png"
+) {
+  html <- readLines(html_path, warn = FALSE)
+  matches <- grepl('<link rel="icon"', html, fixed = TRUE) &
+    grepl(favicon_path, html, fixed = TRUE)
+
+  if (sum(matches) != 1L) {
+    stop(
+      "Expected exactly one generated PNG favicon declaration in ",
+      html_path,
+      call. = FALSE
+    )
+  }
+
+  html[matches] <- paste0(
+    '<link rel="icon" type="image/png" sizes="32x32" href="',
+    favicon_path,
+    '">'
+  )
+  writeLines(html, html_path, useBytes = TRUE)
+  invisible(html_path)
+}
+
 copy_file_contents <- function(from, to) {
   if (!file.exists(from) || dir.exists(from)) {
     stop("Source artifact is not a file: ", from, call. = FALSE)
@@ -255,6 +280,7 @@ main <- function() {
     envir = render_env
   )
 
+  fix_png_favicon_declaration(staged_output)
   install_rendered_dashboard(staged_output, output_path)
   message("Dashboard render complete.")
   disconnect_render_connections(render_env)

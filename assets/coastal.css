@@ -13,8 +13,8 @@ body {
 
 .navbar.navbar-inverse {
   min-height: var(--coastal-navbar-height);
-  background: var(--ptg-midnight);
-  background-color: var(--ptg-midnight) !important;
+  background: var(--ptg-paper);
+  background-color: var(--ptg-paper) !important;
   border: 0;
   border-bottom: 1px solid var(--ptg-line);
   box-shadow: none;
@@ -37,7 +37,7 @@ body {
   align-items: center;
   gap: var(--ptg-space-2);
   height: var(--coastal-navbar-height);
-  color: var(--ptg-paper);
+  color: var(--ptg-ink);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -.045em;
@@ -52,7 +52,7 @@ body {
 }
 
 .navbar .ptg-brand-dot {
-  color: var(--ptg-focus);
+  color: var(--ptg-accent);
 }
 
 .navbar .navbar-brand {
@@ -62,7 +62,7 @@ body {
   height: var(--coastal-navbar-height);
   margin-left: var(--ptg-space-3);
   padding: 0;
-  color: var(--ptg-paper);
+  color: var(--ptg-ink) !important;
   font-size: 14px;
   font-weight: 500;
   line-height: 1;
@@ -71,12 +71,12 @@ body {
 }
 
 .navbar .ptg-brand-separator {
-  color: var(--ptg-survey-blue);
+  color: var(--ptg-sage);
   font-weight: 400;
 }
 
-.navbar-inverse .navbar-nav > li > a {
-  color: var(--ptg-paper);
+.navbar.navbar-inverse .navbar-nav > li > a {
+  color: var(--ptg-ink) !important;
   font-family: var(--ptg-font-sans);
 }
 
@@ -89,7 +89,7 @@ body {
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
   background: transparent;
-  color: var(--ptg-focus) !important;
+  color: var(--ptg-accent) !important;
 }
 
 .navbar-inverse .navbar-toggle {
@@ -97,7 +97,8 @@ body {
 }
 
 .navbar-inverse .navbar-toggle .icon-bar {
-  background-color: var(--ptg-paper);
+  background-color: var(--ptg-ink) !important;
+  background-image: none !important;
 }
 
 .navbar-inverse .navbar-toggle:hover,
@@ -147,7 +148,7 @@ button:focus-visible,
   }
 
   .navbar-collapse {
-    background: var(--ptg-midnight);
+    background: var(--ptg-paper);
     border-top-color: var(--ptg-line);
   }
 }

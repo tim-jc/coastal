@@ -1,8 +1,9 @@
 test_that("local Past the Grid identity assets are complete", {
   identity_files <- c(
     "assets/identity/tokens.css",
-    "assets/identity/symbol-dark.svg",
+    "assets/identity/symbol.svg",
     "assets/identity/favicon.svg",
+    "assets/identity/favicon-32.png",
     "assets/identity/PROVENANCE.md",
     "assets/coastal.css",
     "assets/coastal-shell.html"
@@ -24,10 +25,15 @@ test_that("dashboard uses local identity assets", {
     collapse = "\n"
   )
 
-  expect_match(dashboard_source, "assets/identity/favicon.svg", fixed = TRUE)
+  expect_match(dashboard_source, "assets/identity/favicon-32.png", fixed = TRUE)
   expect_match(dashboard_source, "assets/identity/tokens.css", fixed = TRUE)
   expect_match(dashboard_source, "assets/coastal.css", fixed = TRUE)
-  expect_match(shell_source, "assets/identity/symbol-dark.svg", fixed = TRUE)
+  expect_match(
+    shell_source,
+    'symbol.src = ["assets", "identity", "symbol.svg"].join("/")',
+    fixed = TRUE
+  )
+  expect_false(grepl('src="/Users/', shell_source, fixed = TRUE))
   expect_match(shell_source, "https://pastthegrid.uk", fixed = TRUE)
   expect_false(grepl("https://pastthegrid.uk/.+\\.(css|svg)", shell_source))
 })

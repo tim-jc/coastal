@@ -17,7 +17,7 @@ carto_basemap_api_key <- function() {
 carto_basemap_tile_url <- function() {
   paste0(
     "https://{s}.basemaps.cartocdn.com/",
-    "rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key=",
+    "rastertiles/light_all/{z}/{x}/{y}.png?key=",
     utils::URLencode(carto_basemap_api_key(), reserved = TRUE)
   )
 }

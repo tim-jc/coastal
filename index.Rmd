@@ -3,7 +3,7 @@ title: "Coastal"
 output: 
   flexdashboard::flex_dashboard:
     self_contained: false
-    favicon: assets/identity/favicon.svg
+    favicon: assets/identity/favicon-32.png
     css:
       - assets/identity/tokens.css
       - assets/coastal.css

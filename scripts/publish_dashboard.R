@@ -31,8 +31,9 @@ dashboard <- file.path(project_root, "index.html")
 dependency_dir <- file.path(project_root, "index_files")
 identity_assets <- c(
   "assets/identity/tokens.css",
-  "assets/identity/symbol-dark.svg",
+  "assets/identity/symbol.svg",
   "assets/identity/favicon.svg",
+  "assets/identity/favicon-32.png",
   "assets/identity/PROVENANCE.md",
   "assets/coastal.css",
   "assets/coastal-shell.html"

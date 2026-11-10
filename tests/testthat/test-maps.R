@@ -8,14 +8,14 @@ test_that("missing CARTO key gives an actionable, non-secret error", {
   )
 })
 
-test_that("CARTO tile URL preserves Voyager and includes the configured key", {
+test_that("CARTO tile URL uses Positron and includes the configured key", {
   withr::local_envvar(CARTO_BASEMAP_API_KEY = "test-carto-key")
 
   expect_identical(
     carto_basemap_tile_url(),
     paste0(
       "https://{s}.basemaps.cartocdn.com/",
-      "rastertiles/voyager_labels_under/{z}/{x}/{y}.png?key=test-carto-key"
+      "rastertiles/light_all/{z}/{x}/{y}.png?key=test-carto-key"
     )
   )
 })
