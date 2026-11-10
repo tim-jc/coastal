@@ -85,7 +85,7 @@ The Activity Inspector is a read-only discovery tool. Coastal owns the authorita
 
 ## Publishing
 
-Run `scripts/render_and_publish.sh` to validate inputs, render `index.Rmd` to root `index.html` plus `index_files/`, then commit and push both generated dashboard artifacts. Each step must succeed before the next begins.
+Run `scripts/render_and_publish.sh` to validate inputs, render `index.Rmd` to root `index.html` plus `index_files/`, then commit and push the generated dashboard together with its local `assets/` identity layer. Each step must succeed before the next begins.
 
 For a render without publishing, run `Rscript scripts/render_dashboard.R`.
 

@@ -19,6 +19,10 @@ Project code is split by responsibility under `R/`.
 | `R/plots.R` | renders dashboard plots |
 | `R/valueboxes.R` | renders coordinate value boxes |
 
+The local Past the Grid identity layer lives under `assets/`. Reusable tokens
+and copied identity SVGs are kept in `assets/identity/`; Flexdashboard-specific
+shell styling remains owned by `assets/coastal.css`.
+
 Project entry points should load:
 
 ```r

@@ -1,0 +1,162 @@
+/* Coastal application shell using the local Past the Grid identity tokens. */
+:root {
+  --coastal-navbar-height: 60px;
+}
+
+html,
+body {
+  background: var(--ptg-surface);
+  color: var(--ptg-ink);
+  font-family: var(--ptg-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.navbar.navbar-inverse {
+  min-height: var(--coastal-navbar-height);
+  background: var(--ptg-midnight);
+  background-color: var(--ptg-midnight) !important;
+  border: 0;
+  border-bottom: 1px solid var(--ptg-line);
+  box-shadow: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.navbar .container-fluid,
+.navbar .navbar-header {
+  min-height: var(--coastal-navbar-height);
+}
+
+.navbar .navbar-logo {
+  height: var(--coastal-navbar-height);
+  margin: 0;
+}
+
+.navbar .ptg-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ptg-space-2);
+  height: var(--coastal-navbar-height);
+  color: var(--ptg-paper);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.045em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navbar .ptg-brand img {
+  width: 30px;
+  height: 30px;
+  margin: 0;
+}
+
+.navbar .ptg-brand-dot {
+  color: var(--ptg-focus);
+}
+
+.navbar .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ptg-space-2);
+  height: var(--coastal-navbar-height);
+  margin-left: var(--ptg-space-3);
+  padding: 0;
+  color: var(--ptg-paper);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+
+.navbar .ptg-brand-separator {
+  color: var(--ptg-survey-blue);
+  font-weight: 400;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: var(--ptg-paper);
+  font-family: var(--ptg-font-sans);
+}
+
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus,
+.navbar.navbar-inverse .navbar-nav > li > a.active,
+.navbar.navbar-inverse .navbar-nav > li > a.active:hover,
+.navbar.navbar-inverse .navbar-nav > li > a.active:focus,
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+  background: transparent;
+  color: var(--ptg-focus) !important;
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: var(--ptg-line);
+}
+
+.navbar-inverse .navbar-toggle .icon-bar {
+  background-color: var(--ptg-paper);
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  background: var(--ptg-surface);
+}
+
+.chart-wrapper,
+.nav-tabs-custom,
+.sbframe-commentary {
+  background: var(--ptg-paper);
+  border-color: var(--ptg-line);
+}
+
+.chart-title {
+  border-bottom-color: var(--ptg-line);
+  color: var(--ptg-ink);
+  font-family: var(--ptg-font-sans);
+  font-weight: 500;
+  letter-spacing: -.015em;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--ptg-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(209, 139, 88, .34);
+}
+
+@media (max-width: 767px) {
+  .navbar .ptg-brand {
+    font-size: 14px;
+  }
+
+  .navbar .ptg-brand img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .navbar .navbar-brand {
+    margin-left: var(--ptg-space-2);
+    font-size: 13px;
+  }
+
+  .navbar-collapse {
+    background: var(--ptg-midnight);
+    border-top-color: var(--ptg-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

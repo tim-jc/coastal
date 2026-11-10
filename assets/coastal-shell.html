@@ -1,0 +1,41 @@
+<script>
+(function () {
+  function installCoastalBrand() {
+    var navbar = document.querySelector(".navbar");
+    var logo = document.querySelector(".navbar-logo");
+    var currentApp = document.querySelector(".navbar-brand");
+    var toggle = document.getElementById("navbar-button");
+
+    if (!navbar || !logo || !currentApp || navbar.dataset.ptgBrandInstalled) {
+      return;
+    }
+
+    navbar.dataset.ptgBrandInstalled = "true";
+    navbar.setAttribute("aria-label", "Coastal application navigation");
+
+    logo.innerHTML = [
+      '<a class="ptg-brand" href="https://pastthegrid.uk"',
+      ' aria-label="Past the Grid home">',
+      '<img src="assets/identity/symbol-dark.svg" width="30" height="30"',
+      ' alt="" aria-hidden="true">',
+      '<span>Past the Grid<span class="ptg-brand-dot">.</span></span>',
+      '</a>'
+    ].join("");
+
+    currentApp.innerHTML = [
+      '<span class="ptg-brand-separator" aria-hidden="true">/</span>',
+      '<span aria-current="page">Coastal</span>'
+    ].join("");
+
+    if (toggle && !toggle.getAttribute("aria-label")) {
+      toggle.setAttribute("aria-label", "Toggle dashboard navigation");
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installCoastalBrand);
+  } else {
+    installCoastalBrand();
+  }
+}());
+</script>

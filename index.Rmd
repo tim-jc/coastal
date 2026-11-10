@@ -1,8 +1,14 @@
 ---
-title: "coasting"
+title: "Coastal"
 output: 
   flexdashboard::flex_dashboard:
     self_contained: false
+    favicon: assets/identity/favicon.svg
+    css:
+      - assets/identity/tokens.css
+      - assets/coastal.css
+    includes:
+      after_body: assets/coastal-shell.html
     orientation: rows
     vertical_layout: fill
     theme: 

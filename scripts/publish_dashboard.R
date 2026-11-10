@@ -29,7 +29,15 @@ run_git <- function(args, project_root) {
 project_root <- find_project_root()
 dashboard <- file.path(project_root, "index.html")
 dependency_dir <- file.path(project_root, "index_files")
-dashboard_artifacts <- c("index.html", "index_files")
+identity_assets <- c(
+  "assets/identity/tokens.css",
+  "assets/identity/symbol-dark.svg",
+  "assets/identity/favicon.svg",
+  "assets/identity/PROVENANCE.md",
+  "assets/coastal.css",
+  "assets/coastal-shell.html"
+)
+dashboard_artifacts <- c("index.html", "index_files", "assets")
 
 if (!file.exists(dashboard)) {
   stop("Missing index.html. Render the dashboard before publishing.", call. = FALSE)
@@ -38,6 +46,20 @@ if (!file.exists(dashboard)) {
 if (!dir.exists(dependency_dir)) {
   stop(
     "Missing index_files. Render the non-self-contained dashboard before publishing.",
+    call. = FALSE
+  )
+}
+
+missing_identity_assets <- identity_assets[
+  !file.exists(file.path(project_root, identity_assets))
+]
+
+if (length(missing_identity_assets) > 0) {
+  stop(
+    paste0(
+      "Missing required local identity assets: ",
+      paste(missing_identity_assets, collapse = ", ")
+    ),
     call. = FALSE
   )
 }

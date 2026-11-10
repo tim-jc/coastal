@@ -1,0 +1,28 @@
+/*
+ * Past the Grid identity tokens adopted by Coastal.
+ * Canonical source and revision: see PROVENANCE.md.
+ */
+:root {
+  --ptg-midnight: #172630;
+  --ptg-paper: #F1EFE7;
+  --ptg-sage: #667C73;
+  --ptg-copper: #D18B58;
+  --ptg-survey-blue: #8BA9B7;
+
+  --ptg-ink: var(--ptg-midnight);
+  --ptg-muted: #52635C;
+  --ptg-accent: #9B582E;
+  --ptg-line: #C8CDC2;
+  --ptg-surface: #E7E9DF;
+  --ptg-focus: #E2A577;
+
+  --ptg-font-sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  --ptg-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --ptg-space-1: .25rem;
+  --ptg-space-2: .5rem;
+  --ptg-space-3: .75rem;
+  --ptg-space-4: 1rem;
+  --ptg-space-6: 1.5rem;
+  --ptg-space-8: 2rem;
+}
