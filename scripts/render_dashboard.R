@@ -43,42 +43,82 @@ dependency_path_for <- function(html_path) {
   file.path(dirname(html_path), paste0(stem, "_files"))
 }
 
-move_path <- function(from, to) {
-  if (!file.rename(from, to)) {
-    stop("Could not move rendered artifact from ", from, " to ", to, call. = FALSE)
+copy_file_contents <- function(from, to) {
+  if (!file.exists(from) || dir.exists(from)) {
+    stop("Source artifact is not a file: ", from, call. = FALSE)
   }
+
+  dir.create(dirname(to), recursive = TRUE, showWarnings = FALSE)
+  source_size <- unname(file.info(from)$size)
+  input <- file(from, open = "rb")
+  output <- file(to, open = "wb")
+
+  on.exit({
+    if (!is.null(input)) close(input)
+    if (!is.null(output)) close(output)
+  }, add = TRUE)
+
+  repeat {
+    chunk <- readBin(input, what = "raw", n = 1024L * 1024L)
+    if (length(chunk) == 0L) break
+    writeBin(chunk, output, useBytes = TRUE)
+  }
+
+  close(input)
+  input <- NULL
+  close(output)
+  output <- NULL
+
+  if (!identical(unname(file.info(to)$size), source_size)) {
+    stop("Copied artifact has an unexpected size: ", to, call. = FALSE)
+  }
+
+  invisible(to)
+}
+
+relative_files <- function(path) {
+  if (!dir.exists(path)) return(character())
+
+  list.files(
+    path,
+    all.files = TRUE,
+    no.. = TRUE,
+    recursive = TRUE,
+    full.names = FALSE,
+    include.dirs = FALSE
+  )
+}
+
+sync_directory_contents <- function(from, to) {
+  if (!dir.exists(from)) {
+    stop("Source artifact directory does not exist: ", from, call. = FALSE)
+  }
+
+  dir.create(to, recursive = TRUE, showWarnings = FALSE)
+  source_files <- relative_files(from)
+
+  for (relative_path in source_files) {
+    copy_file_contents(
+      file.path(from, relative_path),
+      file.path(to, relative_path)
+    )
+  }
+
+  stale_files <- setdiff(relative_files(to), source_files)
+  if (length(stale_files) > 0L) {
+    unlink(file.path(to, stale_files), force = TRUE)
+  }
+
+  invisible(to)
 }
 
 replace_file <- function(from, to) {
-  # Keep the canonical file present until its replacement is ready. This avoids
-  # cloud-sync clients treating the render as a delete/recreate conflict and
-  # restoring the previous dashboard as, for example, "index 2.html".
-  if (file.rename(from, to)) return(invisible(to))
-
-  if (!file.copy(from, to, overwrite = TRUE)) {
-    stop("Could not replace rendered artifact at ", to, call. = FALSE)
-  }
-
+  # Rewrite the existing file rather than renaming over it. Cloud-backed file
+  # providers can interpret inode replacement as a conflict and restore the old
+  # dashboard under a duplicate name such as "index 2.html".
+  copy_file_contents(from, to)
   unlink(from, force = TRUE)
   invisible(to)
-}
-
-move_directory_contents <- function(from, to) {
-  if (!dir.exists(to)) dir.create(to, recursive = TRUE)
-  entries <- list.files(from, all.files = TRUE, no.. = TRUE, full.names = TRUE)
-
-  for (entry in entries) {
-    move_path(entry, file.path(to, basename(entry)))
-  }
-
-  invisible(to)
-}
-
-clear_directory <- function(path) {
-  if (!dir.exists(path)) return(invisible(path))
-  entries <- list.files(path, all.files = TRUE, no.. = TRUE, full.names = TRUE)
-  if (length(entries) > 0) unlink(entries, recursive = TRUE, force = TRUE)
-  invisible(path)
 }
 
 install_rendered_dashboard <- function(staged_html, output_path) {
@@ -117,7 +157,7 @@ install_rendered_dashboard <- function(staged_html, output_path) {
 
   if (had_dependencies) {
     dir.create(old_dependencies)
-    move_directory_contents(output_dependencies, old_dependencies)
+    sync_directory_contents(output_dependencies, old_dependencies)
   } else {
     dir.create(output_dependencies)
   }
@@ -125,13 +165,13 @@ install_rendered_dashboard <- function(staged_html, output_path) {
   installed <- FALSE
   on.exit({
     if (!installed) {
-      if (file.exists(output_path)) unlink(output_path, force = TRUE)
-      clear_directory(output_dependencies)
       if (had_html && file.exists(old_html)) {
-        file.copy(old_html, output_path, overwrite = TRUE)
+        copy_file_contents(old_html, output_path)
+      } else if (file.exists(output_path)) {
+        unlink(output_path, force = TRUE)
       }
       if (had_dependencies && dir.exists(old_dependencies)) {
-        move_directory_contents(old_dependencies, output_dependencies)
+        sync_directory_contents(old_dependencies, output_dependencies)
       } else if (dir.exists(output_dependencies)) {
         unlink(output_dependencies, recursive = TRUE, force = TRUE)
       }
@@ -139,7 +179,7 @@ install_rendered_dashboard <- function(staged_html, output_path) {
   }, add = TRUE)
 
   replace_file(staged_html, output_path)
-  move_directory_contents(staged_dependencies, output_dependencies)
+  sync_directory_contents(staged_dependencies, output_dependencies)
   installed <- TRUE
   invisible(output_path)
 }
