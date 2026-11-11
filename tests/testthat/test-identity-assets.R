@@ -38,6 +38,25 @@ test_that("dashboard uses local identity assets", {
   expect_false(grepl("https://pastthegrid.uk/.+\\.(css|svg)", shell_source))
 })
 
+test_that("mobile navigation uses the framework icon slot without a solid fill", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(
+    coastal_css,
+    ".navbar-inverse .navbar-toggle > .icon-bar:last-child",
+    fixed = TRUE
+  )
+  expect_match(coastal_css, "background-color: transparent !important", fixed = TRUE)
+  expect_match(coastal_css, "M4 7h22M4 15h22M4 23h22", fixed = TRUE)
+  expect_false(grepl(".navbar-toggle .icon-bar {\n  background-color: var(--ptg-ink)", coastal_css, fixed = TRUE))
+})
+
 test_that("publisher includes and validates identity assets", {
   publish_source <- paste(
     readLines(

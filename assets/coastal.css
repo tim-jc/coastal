@@ -96,9 +96,9 @@ body {
   border-color: var(--ptg-line);
 }
 
-.navbar-inverse .navbar-toggle .icon-bar {
-  background-color: var(--ptg-ink) !important;
-  background-image: none !important;
+.navbar-inverse .navbar-toggle > .icon-bar:last-child {
+  background-color: transparent !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath stroke='%23172630' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
 }
 
 .navbar-inverse .navbar-toggle:hover,
