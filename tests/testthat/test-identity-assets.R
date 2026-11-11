@@ -57,6 +57,25 @@ test_that("mobile navigation uses the framework icon slot without a solid fill",
   expect_false(grepl(".navbar-toggle .icon-bar {\n  background-color: var(--ptg-ink)", coastal_css, fixed = TRUE))
 })
 
+test_that("mobile table containment is scoped to affected dashboard pages", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(coastal_css, "@media (max-width: 575.98px)", fixed = TRUE)
+  expect_match(coastal_css, "#latest-adventure .dashboard-column", fixed = TRUE)
+  expect_match(coastal_css, "#rides .dashboard-column", fixed = TRUE)
+  expect_match(coastal_css, "#latest-adventure .dataTables_scrollBody", fixed = TRUE)
+  expect_match(coastal_css, "#rides .dataTables_scrollBody", fixed = TRUE)
+  expect_match(coastal_css, "overflow-x: auto !important", fixed = TRUE)
+  expect_false(grepl("body {\n  overflow-x: hidden", coastal_css, fixed = TRUE))
+  expect_false(grepl("html {\n  overflow-x: hidden", coastal_css, fixed = TRUE))
+})
+
 test_that("publisher includes and validates identity assets", {
   publish_source <- paste(
     readLines(

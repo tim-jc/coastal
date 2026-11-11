@@ -153,6 +153,45 @@ button:focus-visible,
   }
 }
 
+@media (max-width: 575.98px) {
+  #latest-adventure .dashboard-column,
+  #latest-adventure .chart-wrapper,
+  #latest-adventure .chart-stage,
+  #latest-adventure .latest-adventure-side,
+  #rides .dashboard-column,
+  #rides .chart-wrapper,
+  #rides .chart-stage,
+  #rides .nav-tabs-custom,
+  #rides .tab-content {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  #latest-adventure .dataTables_wrapper,
+  #latest-adventure .dataTables_scroll,
+  #latest-adventure .dataTables_scrollHead,
+  #latest-adventure .dataTables_scrollBody,
+  #rides .dataTables_wrapper,
+  #rides .dataTables_scroll,
+  #rides .dataTables_scrollHead,
+  #rides .dataTables_scrollBody {
+    max-width: 100%;
+    min-width: 0;
+    width: 100% !important;
+  }
+
+  #latest-adventure .dataTables_scrollBody,
+  #rides .dataTables_scrollBody {
+    overflow-x: auto !important;
+  }
+
+  #latest-adventure .adventure-photo-grid {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
