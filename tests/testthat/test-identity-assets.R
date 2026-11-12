@@ -95,6 +95,28 @@ test_that("table containment hands off to the desktop layout at 768px", {
   expect_match(coastal_css, "#maps #row-2 > .value-box", fixed = TRUE)
 })
 
+test_that("DataTables use the Field Notebook presentation without changing behaviour", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(coastal_css, "#dashboard-container table.dataTable", fixed = TRUE)
+  expect_match(coastal_css, "background: var(--ptg-paper)", fixed = TRUE)
+  expect_match(coastal_css, "border-bottom: 1px solid var(--ptg-line)", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container table.dataTable thead th", fixed = TRUE)
+  expect_match(coastal_css, "background: var(--ptg-surface)", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container table.dataTable tbody td", fixed = TRUE)
+  expect_match(coastal_css, ".dataTables_filter input:focus", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .dataTables_scrollBody", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container div.dts .dataTables_scrollBody table", fixed = TRUE)
+
+  expect_false(grepl("overflow-x: hidden", coastal_css, fixed = TRUE))
+})
+
 test_that("desktop map extremity boxes may shrink within their row", {
   coastal_css <- paste(
     readLines(

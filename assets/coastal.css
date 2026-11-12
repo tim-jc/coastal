@@ -230,6 +230,115 @@ html body {
   outline-offset: 2px;
 }
 
+/* Field Notebook treatment for the dashboard's five DataTables. */
+#dashboard-container .dataTables_wrapper {
+  color: var(--ptg-ink);
+  font-family: var(--ptg-font-sans);
+}
+
+#dashboard-container table.dataTable {
+  background: var(--ptg-paper);
+  border-bottom: 1px solid var(--ptg-line);
+  color: var(--ptg-ink);
+}
+
+#dashboard-container table.dataTable thead th,
+#dashboard-container table.dataTable thead td {
+  background: var(--ptg-surface);
+  border-bottom: 1px solid var(--ptg-sage);
+  border-top: 0;
+  color: var(--ptg-ink);
+  font-weight: 600;
+  line-height: 1.3;
+  padding-bottom: 9px;
+  padding-top: 9px;
+  vertical-align: bottom;
+}
+
+#dashboard-container table.dataTable tbody th,
+#dashboard-container table.dataTable tbody td {
+  background: transparent;
+  border-bottom: 1px solid var(--ptg-line);
+  border-top: 0;
+  color: var(--ptg-ink);
+  line-height: 1.35;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  vertical-align: middle;
+}
+
+#dashboard-container table.dataTable.table-striped > tbody > tr.odd > * {
+  box-shadow: inset 0 0 0 9999px rgba(102, 124, 115, .055);
+}
+
+#dashboard-container table.dataTable.table-hover > tbody > tr:hover > * {
+  box-shadow: inset 0 0 0 9999px rgba(209, 139, 88, .13);
+}
+
+#dashboard-container table.dataTable > tbody > tr.selected > * {
+  box-shadow: inset 0 0 0 9999px rgba(102, 124, 115, .24);
+  color: var(--ptg-ink);
+}
+
+#dashboard-container table.dataTable > tbody > tr.selected a {
+  color: var(--ptg-accent);
+}
+
+#dashboard-container table.dataTable thead > tr > th.sorting::before,
+#dashboard-container table.dataTable thead > tr > th.sorting::after,
+#dashboard-container table.dataTable thead > tr > th.sorting_asc::before,
+#dashboard-container table.dataTable thead > tr > th.sorting_asc::after,
+#dashboard-container table.dataTable thead > tr > th.sorting_desc::before,
+#dashboard-container table.dataTable thead > tr > th.sorting_desc::after {
+  color: var(--ptg-sage);
+}
+
+#dashboard-container table.dataTable thead > tr > th.sorting_asc::before,
+#dashboard-container table.dataTable thead > tr > th.sorting_desc::after {
+  color: var(--ptg-accent);
+  opacity: .9;
+}
+
+#dashboard-container .dataTables_filter {
+  color: var(--ptg-muted);
+  margin-bottom: var(--ptg-space-2);
+}
+
+#dashboard-container .dataTables_filter label {
+  font-weight: 500;
+}
+
+#dashboard-container .dataTables_filter input {
+  background: var(--ptg-paper);
+  border: 1px solid var(--ptg-line);
+  border-radius: 2px;
+  color: var(--ptg-ink);
+  min-height: 34px;
+  padding: 5px 8px;
+}
+
+#dashboard-container .dataTables_filter input:focus {
+  border-color: var(--ptg-focus);
+  box-shadow: 0 0 0 2px rgba(133, 72, 34, .18);
+  outline: 2px solid transparent;
+}
+
+#dashboard-container .dataTables_info {
+  color: var(--ptg-muted);
+}
+
+#dashboard-container .dataTables_scrollHead,
+#dashboard-container .dataTables_scrollBody,
+#dashboard-container div.DTS .dataTables_scrollBody,
+#dashboard-container div.dts .dataTables_scrollBody {
+  background: var(--ptg-paper);
+}
+
+#dashboard-container div.DTS .dataTables_scrollBody table,
+#dashboard-container div.dts .dataTables_scrollBody table {
+  background-color: var(--ptg-paper);
+}
+
 a:focus-visible,
 button:focus-visible,
 [tabindex]:focus-visible {
