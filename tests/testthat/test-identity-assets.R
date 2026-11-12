@@ -98,6 +98,29 @@ test_that("desktop map extremity boxes may shrink within their row", {
   )
 })
 
+test_that("dashboard surfaces and tabs use scoped Field Notebook tokens", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(coastal_css, "html body {\n  background: var(--ptg-paper);", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .chart-wrapper", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .chart-title", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .chart-stage", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .nav-tabs-custom > .nav-tabs", fixed = TRUE)
+  expect_match(coastal_css, "border-top-color: var(--ptg-copper)", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .nav-tabs-custom > .tab-content", fixed = TRUE)
+
+  identity_start <- regexpr("#dashboard-container,", coastal_css, fixed = TRUE)
+  identity_end <- regexpr("\na:focus-visible", coastal_css, fixed = TRUE)
+  identity_rules <- substr(coastal_css, identity_start, identity_end - 1L)
+  expect_false(grepl("!important", identity_rules, fixed = TRUE))
+})
+
 test_that("publisher includes and validates identity assets", {
   publish_source <- paste(
     readLines(
