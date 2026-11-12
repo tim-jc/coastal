@@ -135,9 +135,50 @@ test_that("dashboard surfaces and tabs use scoped Field Notebook tokens", {
   expect_match(coastal_css, "#dashboard-container .nav-tabs-custom > .tab-content", fixed = TRUE)
 
   identity_start <- regexpr("#dashboard-container,", coastal_css, fixed = TRUE)
-  identity_end <- regexpr("\na:focus-visible", coastal_css, fixed = TRUE)
+  identity_end <- regexpr("\n#dashboard-container .value-box {", coastal_css, fixed = TRUE)
   identity_rules <- substr(coastal_css, identity_start, identity_end - 1L)
   expect_false(grepl("!important", identity_rules, fixed = TRUE))
+})
+
+test_that("value boxes use scoped Field Notebook metric styling", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(coastal_css, "#dashboard-container .value-box {", fixed = TRUE)
+  expect_match(coastal_css, "background-color: var(--ptg-surface) !important", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .value-box .value", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .value-box .caption", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .value-box .icon i", fixed = TRUE)
+  expect_match(coastal_css, "font-size: 24px", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .value-box.linked-value:hover", fixed = TRUE)
+  expect_match(coastal_css, "#dashboard-container .coastal-value-box-link:focus-visible", fixed = TRUE)
+  expect_match(coastal_css, "@media (max-width: 767px)", fixed = TRUE)
+  expect_false(grepl("overflow-x: hidden", coastal_css, fixed = TRUE))
+})
+
+test_that("linked value boxes are upgraded to native links", {
+  shell_source <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal-shell.html"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(shell_source, "span.value-output[data-href]", fixed = TRUE)
+  expect_match(shell_source, 'document.createElement("a")', fixed = TRUE)
+  expect_match(shell_source, 'link.className = "coastal-value-box-link"', fixed = TRUE)
+  expect_match(shell_source, 'link.target = "_blank"', fixed = TRUE)
+  expect_match(shell_source, 'link.rel = "noopener noreferrer"', fixed = TRUE)
+  expect_match(shell_source, 'link.setAttribute("aria-label"', fixed = TRUE)
+  expect_match(shell_source, '.off("click.value-box")', fixed = TRUE)
+  expect_false(grepl('setAttribute("tabindex"', shell_source, fixed = TRUE))
+  expect_false(grepl('addEventListener("keydown"', shell_source, fixed = TRUE))
 })
 
 test_that("publisher includes and validates identity assets", {

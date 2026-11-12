@@ -46,10 +46,90 @@
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", installCoastalBrand);
-  } else {
+  function captureLinkedValueBoxes() {
+    document.querySelectorAll("span.value-output[data-href]").forEach(function (output) {
+      var container = output.closest(".section.level3");
+      var heading = container && container.querySelector("h3");
+
+      if (!container) {
+        return;
+      }
+
+      container.dataset.coastalValueHref = output.dataset.href;
+      container.dataset.coastalValueName = [
+        heading && heading.textContent.trim(),
+        output.textContent.trim()
+      ].filter(Boolean).join(": ");
+    });
+  }
+
+  function installAccessibleValueBoxes() {
+    var pending = document.querySelectorAll(
+      "[data-coastal-value-href].linked-value:not([data-coastal-link-installed])"
+    );
+
+    pending.forEach(function (container) {
+      var inner = Array.prototype.find.call(
+        container.children,
+        function (child) { return child.classList.contains("inner"); }
+      );
+      var icon = Array.prototype.find.call(
+        container.children,
+        function (child) { return child.classList.contains("icon"); }
+      );
+
+      if (!inner) {
+        return;
+      }
+
+      if (window.jQuery) {
+        window.jQuery(container).off("click.value-box");
+      }
+
+      var link = document.createElement("a");
+      link.className = "coastal-value-box-link";
+      link.href = container.dataset.coastalValueHref;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.setAttribute("aria-label", container.dataset.coastalValueName);
+
+      container.insertBefore(link, inner);
+      link.appendChild(inner);
+      if (icon) {
+        link.appendChild(icon);
+      }
+      container.dataset.coastalLinkInstalled = "true";
+    });
+
+    return document.querySelectorAll(
+      "[data-coastal-value-href]:not([data-coastal-link-installed])"
+    ).length === 0;
+  }
+
+  function installCoastalShell() {
     installCoastalBrand();
+    captureLinkedValueBoxes();
+
+    var observer = new MutationObserver(function () {
+      if (installAccessibleValueBoxes()) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      childList: true,
+      subtree: true
+    });
+    installAccessibleValueBoxes();
+  }
+
+  captureLinkedValueBoxes();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installCoastalShell);
+  } else {
+    installCoastalShell();
   }
 }());
 </script>
