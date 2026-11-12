@@ -17,8 +17,8 @@ Project total: {round(cumulative_miles, 1)}"
       y = cumulative_miles,
       text = text_label
     )) +
-    geom_step(colour = phiets_navy, linewidth = 1) +
-    geom_point(colour = phiets_red, size = 2) +
+    geom_step(colour = coastal_chart_palette[["climb"]], linewidth = 1) +
+    geom_point(colour = coastal_chart_palette[["distance"]], size = 2) +
     labs(x = "", y = "Cumulative coastal miles") +
     theme_minimal() +
     theme(
@@ -52,7 +52,10 @@ Coastal miles: {round(coastal_miles, 1)}"
 
   plot <- monthly_activity |>
     ggplot(aes(x = month, y = coastal_miles, text = text_label)) +
-    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.25) +
+    geom_col(
+      fill = coastal_chart_fill(coastal_chart_palette[["distance"]]),
+      colour = coastal_chart_palette[["distance"]]
+    ) +
     labs(x = "", y = "Coastal miles") +
     theme_minimal() +
     theme(
@@ -80,7 +83,10 @@ Coastal climb: {round(coastal_elevation_metres, 0)}m"
 
   plot <- rider_totals |>
     ggplot(aes(x = rider, y = coastal_miles, text = text_label)) +
-    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.25) +
+    geom_col(
+      fill = coastal_chart_fill(coastal_chart_palette[["distribution"]]),
+      colour = coastal_chart_palette[["distribution"]]
+    ) +
     coord_flip() +
     labs(x = "", y = "Coastal miles") +
     theme_minimal() +

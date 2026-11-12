@@ -1,3 +1,13 @@
+coastal_chart_palette <- c(
+  distance = "#9B582E",
+  climb = "#172630",
+  distribution = "#667C73"
+)
+
+coastal_chart_fill <- function(colour) {
+  scales::alpha(colour, .28)
+}
+
 field_notebook_plotly <- function(widget) {
   plotly::layout(
     widget,
@@ -187,7 +197,10 @@ draw_miles_by_hour_plot <- function(coastal_streams) {
       )
     ) %>%
     ggplot(aes(x = hour_of_day, y = dist_ridden_in_hr_mi, text = text_label)) +
-    geom_col(fill = phiets_red, colour = phiets_red, alpha = 0.2) +
+    geom_col(
+      fill = coastal_chart_fill(coastal_chart_palette[["distribution"]]),
+      colour = coastal_chart_palette[["distribution"]]
+    ) +
     scale_x_continuous(breaks = seq(1, 24, 1)) +
     labs(x = "\nHour of day", y = "Coastal miles\n") +
     theme_minimal() +
@@ -239,9 +252,21 @@ draw_miles_climb_plot <- function(rides_index) {
       colour = metric_label,
       text = text_label
     )) +
-    geom_col(position = "dodge", alpha = 0.25) +
-    scale_fill_manual(values = c(phiets_red, phiets_navy), name = NULL) +
-    scale_colour_manual(values = c(phiets_red, phiets_navy), name = NULL) +
+    geom_col(position = "dodge") +
+    scale_fill_manual(
+      values = coastal_chart_fill(c(
+        "Coastal miles" = coastal_chart_palette[["distance"]],
+        "Coastal climb (10m units)" = coastal_chart_palette[["climb"]]
+      )),
+      name = NULL
+    ) +
+    scale_colour_manual(
+      values = c(
+        "Coastal miles" = coastal_chart_palette[["distance"]],
+        "Coastal climb (10m units)" = coastal_chart_palette[["climb"]]
+      ),
+      name = NULL
+    ) +
     labs(x = "", y = "", fill = NULL, colour = NULL) +
     theme_minimal() +
     theme(
