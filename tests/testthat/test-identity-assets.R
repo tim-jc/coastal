@@ -76,6 +76,28 @@ test_that("mobile table containment is scoped to affected dashboard pages", {
   expect_false(grepl("html {\n  overflow-x: hidden", coastal_css, fixed = TRUE))
 })
 
+test_that("desktop map extremity boxes may shrink within their row", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(
+    coastal_css,
+    "@media (min-width: 768px) and (max-width: 859.98px)",
+    fixed = TRUE
+  )
+  expect_match(coastal_css, "#maps #row-2 > .value-box", fixed = TRUE)
+  expect_match(
+    coastal_css,
+    "#maps #row-2 > .value-box {\n    flex: 1 1 auto !important;\n    min-width: 0;\n  }",
+    fixed = TRUE
+  )
+})
+
 test_that("publisher includes and validates identity assets", {
   publish_source <- paste(
     readLines(
