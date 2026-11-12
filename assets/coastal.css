@@ -203,7 +203,7 @@ button:focus-visible,
   }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 767px) {
   #latest-adventure .dashboard-column,
   #latest-adventure .chart-wrapper,
   #latest-adventure .chart-stage,

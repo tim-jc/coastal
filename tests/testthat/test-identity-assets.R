@@ -57,7 +57,7 @@ test_that("mobile navigation uses the framework icon slot without a solid fill",
   expect_false(grepl(".navbar-toggle .icon-bar {\n  background-color: var(--ptg-ink)", coastal_css, fixed = TRUE))
 })
 
-test_that("mobile table containment is scoped to affected dashboard pages", {
+test_that("table containment spans the full stacked-layout breakpoint", {
   coastal_css <- paste(
     readLines(
       file.path(coastal_project_root, "assets", "coastal.css"),
@@ -66,7 +66,8 @@ test_that("mobile table containment is scoped to affected dashboard pages", {
     collapse = "\n"
   )
 
-  expect_match(coastal_css, "@media (max-width: 575.98px)", fixed = TRUE)
+  expect_match(coastal_css, "@media (max-width: 767px)", fixed = TRUE)
+  expect_false(grepl("@media (max-width: 575.98px)", coastal_css, fixed = TRUE))
   expect_match(coastal_css, "#latest-adventure .dashboard-column", fixed = TRUE)
   expect_match(coastal_css, "#rides .dashboard-column", fixed = TRUE)
   expect_match(coastal_css, "#latest-adventure .dataTables_scrollBody", fixed = TRUE)
@@ -74,6 +75,24 @@ test_that("mobile table containment is scoped to affected dashboard pages", {
   expect_match(coastal_css, "overflow-x: auto !important", fixed = TRUE)
   expect_false(grepl("body {\n  overflow-x: hidden", coastal_css, fixed = TRUE))
   expect_false(grepl("html {\n  overflow-x: hidden", coastal_css, fixed = TRUE))
+})
+
+test_that("table containment hands off to the desktop layout at 768px", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(coastal_css, "@media (max-width: 767px)", fixed = TRUE)
+  expect_match(
+    coastal_css,
+    "@media (min-width: 768px) and (max-width: 859.98px)",
+    fixed = TRUE
+  )
+  expect_match(coastal_css, "#maps #row-2 > .value-box", fixed = TRUE)
 })
 
 test_that("desktop map extremity boxes may shrink within their row", {
