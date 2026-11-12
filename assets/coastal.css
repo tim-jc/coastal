@@ -339,6 +339,26 @@ html body {
   background-color: var(--ptg-paper);
 }
 
+#stats .plotly .modebar {
+  background: transparent;
+  border: 0;
+  padding: 2px;
+}
+
+#stats .plotly .modebar-btn path {
+  fill: var(--ptg-sage) !important;
+}
+
+#stats .plotly .modebar-btn:hover path,
+#stats .plotly .modebar-btn.active path {
+  fill: var(--ptg-focus) !important;
+}
+
+#stats .plotly .modebar-btn:focus-visible {
+  outline: 2px solid var(--ptg-focus);
+  outline-offset: 1px;
+}
+
 a:focus-visible,
 button:focus-visible,
 [tabindex]:focus-visible {

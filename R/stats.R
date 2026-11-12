@@ -27,7 +27,8 @@ Project total: {round(cumulative_miles, 1)}"
       panel.grid.minor = element_blank()
     )
 
-  ggplotly(plot, tooltip = "text")
+  ggplotly(plot, tooltip = "text") |>
+    field_notebook_plotly()
 }
 
 draw_monthly_activity_plot <- function(rides_index) {
@@ -60,7 +61,8 @@ Coastal miles: {round(coastal_miles, 1)}"
       panel.grid.minor = element_blank()
     )
 
-  ggplotly(plot, tooltip = "text")
+  ggplotly(plot, tooltip = "text") |>
+    field_notebook_plotly()
 }
 
 draw_rider_contribution_plot <- function(rides_index) {
@@ -89,7 +91,8 @@ Coastal climb: {round(coastal_elevation_metres, 0)}m"
       panel.grid.minor = element_blank()
     )
 
-  ggplotly(plot, tooltip = "text")
+  ggplotly(plot, tooltip = "text") |>
+    field_notebook_plotly()
 }
 
 format_rider_leaderboard <- function(rides_index) {

@@ -1,3 +1,58 @@
+field_notebook_plotly <- function(widget) {
+  plotly::layout(
+    widget,
+    paper_bgcolor = "#F1EFE7",
+    plot_bgcolor = "#F1EFE7",
+    font = list(
+      family = "Avenir Next, Avenir, Segoe UI, sans-serif",
+      color = "#172630",
+      size = 12
+    ),
+    xaxis = list(
+      automargin = TRUE,
+      gridcolor = "#C8CDC2",
+      gridwidth = 1,
+      linecolor = "#667C73",
+      showgrid = TRUE,
+      showline = TRUE,
+      tickfont = list(color = "#52635C"),
+      title = list(font = list(color = "#172630")),
+      zerolinecolor = "#C8CDC2",
+      zerolinewidth = 1
+    ),
+    yaxis = list(
+      automargin = TRUE,
+      gridcolor = "#C8CDC2",
+      gridwidth = 1,
+      linecolor = "#667C73",
+      showgrid = TRUE,
+      showline = TRUE,
+      tickfont = list(color = "#52635C"),
+      title = list(font = list(color = "#172630")),
+      zerolinecolor = "#C8CDC2",
+      zerolinewidth = 1
+    ),
+    legend = list(
+      bgcolor = "rgba(0,0,0,0)",
+      borderwidth = 0,
+      font = list(
+        family = "Avenir Next, Avenir, Segoe UI, sans-serif",
+        color = "#52635C",
+        size = 12
+      )
+    ),
+    hoverlabel = list(
+      bgcolor = "#172630",
+      bordercolor = "#667C73",
+      font = list(
+        family = "Avenir Next, Avenir, Segoe UI, sans-serif",
+        color = "#F1EFE7",
+        size = 12
+      )
+    )
+  )
+}
+
 draw_xp_plot <- function(rides_index) {
   mile_equivalent_climb <- min(rides_index$dist_per_elev)
 
@@ -142,7 +197,8 @@ draw_miles_by_hour_plot <- function(coastal_streams) {
       panel.grid = element_blank()
     )
 
-  mbh_plot <- ggplotly(mbh_plot, tooltip = "text")
+  mbh_plot <- ggplotly(mbh_plot, tooltip = "text") |>
+    field_notebook_plotly()
 
   return(mbh_plot)
 }
@@ -196,7 +252,8 @@ draw_miles_climb_plot <- function(rides_index) {
     )
 
   mc_plot <- ggplotly(mc_plot, tooltip = "text") |>
-    layout(legend = list(title = list(text = "")))
+    layout(legend = list(title = list(text = ""))) |>
+    field_notebook_plotly()
 
   return(mc_plot)
 }
