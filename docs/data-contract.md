@@ -1,6 +1,6 @@
 # Data Contract
 
-The coastal project consumes data from the silver layer of `cycling-platform`.
+The coastal project consumes activity summaries and canonical activity-stream samples from the Silver layer of `cycling-platform`.
 
 ## Source Schema
 
@@ -75,6 +75,17 @@ Required columns:
 - every ride summary has whole-ride distance from silver `activities`;
 - ferry markers reference known coastal activity IDs.
 
-## Current Known Blocker
+## Validation Failure Interpretation
 
-The silver `activity_streams` table is currently expected by the project, but the most recent check found it empty. Until the upstream silver stream bug is fixed, `scripts/check_inputs.R` should fail and generated dashboard output should not be published.
+`Rscript scripts/check_inputs.R` is the authoritative pre-render validation. Its failures should be interpreted according to the condition reported:
+
+- **Missing activity records:** one or more Coastal `activity_id` values are absent from Silver `activities`.
+- **Missing stream records:** one or more Coastal activities have no rows in Silver `activity_streams`.
+- **Empty cropped results:** stream rows exist, but an inclusive Coastal sample-index boundary selects no observations.
+- **Database connectivity failure:** Coastal could not reach or authenticate to MariaDB, so table existence and population were not evaluated.
+
+These conditions are not interchangeable. In particular, a connection failure or a missing Coastal activity does not establish that the complete Silver stream table is empty.
+
+## Resolved Historical Incident
+
+In June 2026, Coastal recorded an upstream blocker after its input check found no usable Silver stream rows for the configured Coastal activities. The Platform Silver stream repair/backfill and Coastal migration were completed in July 2026. This incident is retained as historical context and is not a current operational-status claim.

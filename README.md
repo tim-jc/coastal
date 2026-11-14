@@ -4,11 +4,11 @@ Coastal builds a cycling dashboard for the coastal ride project. It consumes rid
 
 The generated root `index.html` file is the GitHub Pages publishing artifact. Do not commit regenerated dashboard output while validation is failing.
 
-## Current Status
+## Input Readiness
 
-The project is currently blocked on an upstream silver streams issue: `cycling_platform_silver.activity_streams` is expected to contain stream rows for the coastal activity IDs, but the most recent smoke check found it empty.
+The Platform Silver migration and the Silver activity-stream repair/backfill were completed in July 2026. Coastal consumes the resulting `cycling_platform_silver.activities` and `cycling_platform_silver.activity_streams` tables and no longer depends on the legacy scraper database.
 
-Before publishing:
+Before every render or publication, run the authoritative input validation:
 
 ```r
 Rscript scripts/check_inputs.R
@@ -89,7 +89,7 @@ Run `scripts/render_and_publish.sh` to validate inputs, render `index.Rmd` to ro
 
 For a render without publishing, run `Rscript scripts/render_dashboard.R`.
 
-Do not publish while `scripts/check_inputs.R` fails. In the current state, publishing should wait until the silver `activity_streams` table is populated.
+Do not render or publish while `scripts/check_inputs.R` fails. Diagnose the reported failure as a current operational issue; do not infer from the resolved 2026 incident that the complete Silver stream table is empty.
 
 ## Rider Visualisations
 

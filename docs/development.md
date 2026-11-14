@@ -77,7 +77,9 @@ Validate silver inputs:
 Rscript scripts/check_inputs.R
 ```
 
-The input check requires database access and should fail while silver `activity_streams` is empty.
+This is the authoritative pre-render input validation. It requires database access and checks that configured Coastal activities exist in Silver, have stream rows, produce observations inside every inclusive sample-index crop window, and yield complete ride summaries. A connectivity failure means those database checks did not run; it is not evidence that Silver streams are empty.
+
+The historical Silver stream population blocker was resolved when the Platform repair/backfill and Coastal migration completed in July 2026. Treat any new validation failure according to its current error message rather than as a continuation of that incident.
 
 Run unit tests without database access:
 
