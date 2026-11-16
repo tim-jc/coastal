@@ -277,8 +277,23 @@ draw_miles_climb_plot <- function(rides_index) {
     )
 
   mc_plot <- ggplotly(mc_plot, tooltip = "text") |>
-    layout(legend = list(title = list(text = ""))) |>
-    field_notebook_plotly()
+    field_notebook_plotly() |>
+    layout(
+      margin = list(t = 58, r = 12, b = 70, l = 48),
+      xaxis = list(
+        automargin = TRUE,
+        tickangle = -45
+      ),
+      legend = list(
+        title = list(text = ""),
+        orientation = "h",
+        traceorder = "normal",
+        x = 0.5,
+        xanchor = "center",
+        y = 1.02,
+        yanchor = "bottom"
+      )
+    )
 
   return(mc_plot)
 }

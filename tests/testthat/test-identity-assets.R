@@ -176,6 +176,8 @@ test_that("value boxes use scoped Field Notebook metric styling", {
   expect_match(coastal_css, "#dashboard-container .value-box .value", fixed = TRUE)
   expect_match(coastal_css, "#dashboard-container .value-box .caption", fixed = TRUE)
   expect_match(coastal_css, "#dashboard-container .value-box .icon i", fixed = TRUE)
+  expect_match(coastal_css, "font-family: FontAwesome", fixed = TRUE)
+  expect_match(coastal_css, "opacity: .82", fixed = TRUE)
   expect_match(coastal_css, "font-size: 24px", fixed = TRUE)
   expect_match(coastal_css, "#dashboard-container .value-box.linked-value:hover", fixed = TRUE)
   expect_match(coastal_css, "#dashboard-container .coastal-value-box-link:focus-visible", fixed = TRUE)

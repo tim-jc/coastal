@@ -95,4 +95,11 @@ test_that("annual distance and climb retain trace order with approved colours", 
     vapply(built$x$data, function(trace) trace$marker$line$color, character(1)),
     c("rgba(23,38,48,1)", "rgba(155,88,46,1)")
   )
+
+  expect_identical(built$x$layout$legend$orientation, "h")
+  expect_identical(built$x$layout$legend$traceorder, "normal")
+  expect_identical(built$x$layout$legend$x, 0.5)
+  expect_identical(built$x$layout$legend$xanchor, "center")
+  expect_identical(built$x$layout$xaxis$tickangle, -45)
+  expect_identical(built$x$layout$margin, list(t = 58, r = 12, b = 70, l = 48))
 })
