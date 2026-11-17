@@ -162,6 +162,45 @@ test_that("dashboard surfaces and tabs use scoped Field Notebook tokens", {
   expect_false(grepl("!important", identity_rules, fixed = TRUE))
 })
 
+test_that("dashboard text links use the accessible terracotta accent", {
+  coastal_css <- paste(
+    readLines(
+      file.path(coastal_project_root, "assets", "coastal.css"),
+      warn = FALSE
+    ),
+    collapse = "\n"
+  )
+
+  expect_match(
+    coastal_css,
+    "#dashboard-container a:not(.coastal-value-box-link) {\n  color: var(--ptg-accent);\n}",
+    fixed = TRUE
+  )
+  expect_match(
+    coastal_css,
+    "#dashboard-container a:not(.coastal-value-box-link):visited",
+    fixed = TRUE
+  )
+  expect_match(
+    coastal_css,
+    "#dashboard-container a:not(.coastal-value-box-link):hover",
+    fixed = TRUE
+  )
+  expect_match(coastal_css, "color: var(--ptg-focus)", fixed = TRUE)
+  expect_match(coastal_css, "text-decoration: underline", fixed = TRUE)
+
+  expect_match(
+    coastal_css,
+    ".navbar.navbar-inverse .navbar-nav > li > a",
+    fixed = TRUE
+  )
+  expect_match(
+    coastal_css,
+    "#dashboard-container .leaflet-container .leaflet-bar a",
+    fixed = TRUE
+  )
+})
+
 test_that("value boxes use scoped Field Notebook metric styling", {
   coastal_css <- paste(
     readLines(

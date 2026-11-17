@@ -133,6 +133,22 @@ html body {
   color: var(--ptg-ink);
 }
 
+/* Dashboard text links use the darker terracotta text accent. More specific
+   navigation, value-box and Leaflet rules below retain their own treatment. */
+#dashboard-container a:not(.coastal-value-box-link) {
+  color: var(--ptg-accent);
+}
+
+#dashboard-container a:not(.coastal-value-box-link):visited {
+  color: var(--ptg-focus);
+}
+
+#dashboard-container a:not(.coastal-value-box-link):hover,
+#dashboard-container a:not(.coastal-value-box-link):focus {
+  color: var(--ptg-focus);
+  text-decoration: underline;
+}
+
 #dashboard-container .nav-tabs-custom > .nav-tabs {
   background: var(--ptg-surface);
   border-bottom-color: var(--ptg-line);

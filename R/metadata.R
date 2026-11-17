@@ -105,6 +105,10 @@ riders <- extract_riders(coastal_activities)
 
 phiets_navy <- "#0C2340"
 phiets_red <- "#D50032"
+coastal_marker_palette <- c(
+  photo = "#9B582E",
+  ferry = "#667C73"
+)
 
 section_start_icon <- leaflet::makeAwesomeIcon(
   icon = "fa-play",
@@ -116,13 +120,13 @@ photo_icon <- leaflet::makeAwesomeIcon(
   icon = "fa-camera",
   library = "fa",
   markerColor = "white",
-  iconColor = phiets_red
+  iconColor = coastal_marker_palette[["photo"]]
 )
 ferry_icon <- leaflet::makeAwesomeIcon(
   icon = "fa-ship",
   library = "fa",
   markerColor = "white",
-  iconColor = phiets_navy
+  iconColor = coastal_marker_palette[["ferry"]]
 )
 
 docs_folder_path <- "https://raw.githubusercontent.com/tim-jc/coastal/master/docs/"
