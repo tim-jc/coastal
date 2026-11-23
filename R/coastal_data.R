@@ -10,7 +10,11 @@ enrich_activity_streams <- function(
       by = "activity_id"
     ) |>
     dplyr::mutate(
-      sort_time = dplyr::if_else(ride_direction == "cw", -time_seconds, time_seconds),
+      trace_order = dplyr::if_else(
+        ride_direction == "cw",
+        -sample_index,
+        sample_index
+      ),
       ride_name = factor(ride_name, levels = activities$ride_name, ordered = TRUE),
       start_date_local = as.POSIXct(start_date_local),
       time_of_day = start_date_local + lubridate::seconds(time_seconds),
@@ -29,16 +33,18 @@ enrich_activity_streams <- function(
     )
 
   if (coastal) {
+    # Measurements follow the recorded observation sequence. Geographic display
+    # direction is applied only after the per-sample measurements are attached.
     enriched <- enriched |>
-      dplyr::arrange(ride_name, sort_time) |>
+      dplyr::arrange(activity_id, coastal_segment_id, sample_index) |>
       dplyr::group_by(activity_id, coastal_segment_id)
   } else {
     enriched <- enriched |>
-      dplyr::arrange(activity_id, time_seconds) |>
+      dplyr::arrange(activity_id, sample_index) |>
       dplyr::group_by(activity_id)
   }
 
-  enriched |>
+  enriched <- enriched |>
     dplyr::mutate(
       prev_lng = dplyr::lag(lng),
       prev_lat = dplyr::lag(lat),
@@ -54,6 +60,16 @@ enrich_activity_streams <- function(
       )
     ) |>
     dplyr::ungroup()
+
+  if (coastal) {
+    # Arrange curated sections consistently around the coast without changing
+    # the recorded-order measurements calculated above.
+    enriched |>
+      dplyr::arrange(ride_name, trace_order)
+  } else {
+    enriched |>
+      dplyr::arrange(activity_id, sample_index)
+  }
 }
 
 load_coastal_streams <- function(connection, activities = coastal_activities) {
