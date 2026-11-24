@@ -51,4 +51,7 @@ Generated output is intentionally committed by the explicit publish entry point:
 - `index_files/`
 - `assets/`
 
+Local files beneath `outputs/`, including measurement reconciliation CSVs, are
+ignored by Git and are not part of this publication artifact set.
+
 Avoid publishing generated churn from failed or partial renders. Rendering never stages, commits, or pushes files.

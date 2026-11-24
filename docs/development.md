@@ -87,6 +87,17 @@ Run unit tests without database access:
 Rscript tests/testthat.R
 ```
 
+Reconcile the accepted recorded-order measurement logic against the former
+timestamp/direction ordering:
+
+```r
+Rscript scripts/reconcile_measurement_ordering.R
+```
+
+This query is read-only. It writes local CSV evidence beneath
+`outputs/measurement_reconciliation/`, which is ignored by Git and excluded from
+the dashboard publication artifact set.
+
 ## Generated Files
 
 Generated files include:
@@ -94,6 +105,7 @@ Generated files include:
 - `index.html`
 - rider PNGs under `docs/`
 - rider poster outputs under `outputs/visualisations/`
+- measurement reconciliation evidence under `outputs/measurement_reconciliation/`
 
 Review generated diffs before committing them.
 

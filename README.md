@@ -37,6 +37,9 @@ Rscript scripts/check_inputs.R
 - `R/valueboxes.R`: renders coordinate value boxes.
 - `data/coastal_activities.R`: hand-maintained coastal ride segment metadata.
 - `data/ferries.R`: hand-maintained ferry marker metadata.
+- [XP methodology](docs/xp-methodology.md): documents the intentionally dynamic rider XP calculation.
+- [Measurement-ordering acceptance](docs/measurement-ordering-acceptance.md): records the accepted production reconciliation.
+- [Backlog](docs/backlog.md): records deferred, non-blocking follow-up work.
 
 Use this in project entry points:
 
@@ -94,6 +97,14 @@ Do not render or publish while `scripts/check_inputs.R` fails. Diagnose the repo
 ## Rider Visualisations
 
 Run `Rscript coastal_visualisation.R` to create one coastal-only poster per rider. Outputs are written to `outputs/visualisations/`; interactive route previewing is disabled when run with `Rscript`.
+
+## Measurement Reconciliation
+
+`Rscript scripts/reconcile_measurement_ordering.R` reproduces the former
+timestamp/direction ordering and compares it with recorded sample-index ordering.
+It writes read-only CSV evidence under the ignored
+`outputs/measurement_reconciliation/` directory. These local validation files
+are not dashboard publication artifacts.
 
 ## Website Images
 
